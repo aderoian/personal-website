@@ -63,6 +63,18 @@ function load_projects(): array
     return $cache;
 }
 
+/** Slug from rewrite query string, PATH_INFO, or some Apache redirect env vars. */
+function project_request_slug(): string
+{
+    if (isset($_GET['slug']) && is_string($_GET['slug']) && $_GET['slug'] !== '') {
+        return trim(rawurldecode($_GET['slug']));
+    }
+    if (! empty($_SERVER['PATH_INFO']) && is_string($_SERVER['PATH_INFO'])) {
+        return trim(rawurldecode(trim($_SERVER['PATH_INFO'], '/')), '/');
+    }
+    return '';
+}
+
 /**
  * @return array<string, array<string, mixed>>|null
  */

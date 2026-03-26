@@ -1,18 +1,18 @@
-# Apache (mod_rewrite). If the site lives in a subdirectory, set RewriteBase to match
-# (e.g. RewriteBase /mysite/) and set BASE_PATH in includes/config.php to the same path.
+Options -Indexes -MultiViews
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
 
-    # App routes before -f/-d so /projects keeps using root projects.php even if projects/ exists (dev shim).
-    RewriteRule ^$ index.php [L]
-    RewriteRule ^projects/?$ projects.php [L]
-    RewriteRule ^project/([^/]+)/?$ project.php?slug=$1 [L,QSA]
-
+    # Serve real files and directories first (CSS, assets, projects/index.php shim, etc.)
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
+
+    # Pretty routes (must come after the rule above)
+    RewriteRule ^$ index.php [L]
+    RewriteRule ^projects/?$ projects.php [L]
+    RewriteRule ^project/([^/]+)/?$ project.php?slug=$1 [L,QSA]
 </IfModule>
 
 DirectoryIndex index.php

@@ -10,7 +10,7 @@ if (PHP_SAPI !== 'cli' && str_ends_with(request_uri_path(), '/project.php') && i
     exit;
 }
 
-$slug = isset($_GET['slug']) ? (string) $_GET['slug'] : '';
+$slug = project_request_slug();
 $project = project_by_slug($slug);
 
 if ($project === null) {
