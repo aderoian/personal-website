@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/contact_mailer.php';
 
 if (PHP_SAPI !== 'cli' && str_ends_with(request_uri_path(), '/contact.php')) {
     header('Location: ' . url_contact(), true, 301);
@@ -77,32 +78,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($message === '' || strlen($message) > 8000) {
                 $error = 'Please enter a message.';
             } else {
-                $subjectPrefix = trim(CONTACT_FORM_SUBJECT_PREFIX);
-                if ($subjectPrefix === '') {
-                    $subjectPrefix = '[Website]';
-                }
-                $subject = $subjectPrefix . ' Contact from ' . $name;
-
-                $body = "Name: {$name}\n";
-                $body .= "Email: {$from}\n";
-                $body .= "IP: " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\n";
-                $body .= "User-Agent: " . ($_SERVER['HTTP_USER_AGENT'] ?? '') . "\n";
-                $body .= "\n---\n\n";
-                $body .= $message . "\n";
-
-                $headers = [];
-                $headers[] = 'MIME-Version: 1.0';
-                $headers[] = 'Content-Type: text/plain; charset=UTF-8';
-                $headers[] = 'Reply-To: ' . $from;
-
-                $ok = @mail($formTo, $subject, $body, implode("\r\n", $headers));
-                if ($ok) {
+                $result = send_contact_message([
+                    'name' => $name,
+                    'from' => $from,
+                    'message' => $message,
+                    'to' => $formTo,
+                    'subject_prefix' => (string) CONTACT_FORM_SUBJECT_PREFIX,
+                    'remote_addr' => (string) ($_SERVER['REMOTE_ADDR'] ?? ''),
+                    'user_agent' => (string) ($_SERVER['HTTP_USER_AGENT'] ?? ''),
+                ]);
+                if (($result['ok'] ?? false) === true) {
                     $_SESSION['contact_last_submit'] = $now;
                     $_SESSION['flash_contact'] = ['ok' => true];
                     header('Location: ' . url_contact() . '?sent=1', true, 303);
                     exit;
                 }
-                $error = 'Message could not be sent (server mail is not configured).';
+                $detail = isset($result['error']) && is_string($result['error']) ? trim($result['error']) : '';
+                if ($detail !== '') {
+                    $error = 'Message could not be sent: ' . $detail;
+                } else {
+                    $error = 'Message could not be sent. Please try again later.';
+                }
             }
         }
     }
@@ -184,9 +180,10 @@ require __DIR__ . '/includes/header.php';
             <?php endif; ?>
 
             <?php if (! $formEnabled): ?>
-                <p class="form-note">Email delivery isn’t configured yet.</p>
-            <?php else: ?>
-                <form class="contact-form" method="post" action="<?= e(url_contact()) ?>" novalidate>
+                <p class="form-note">Email delivery is not configured yet, but the form is shown for preview.</p>
+            <?php endif; ?>
+
+            <form class="contact-form" method="post" action="" novalidate>
                     <input type="hidden" name="csrf" value="<?= e($_SESSION['csrf_contact']) ?>">
 
                     <div class="field">
@@ -209,9 +206,8 @@ require __DIR__ . '/includes/header.php';
                         <input class="field__input" id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off">
                     </div>
 
-                    <button class="button button--primary" type="submit">Send message</button>
-                </form>
-            <?php endif; ?>
+                    <button class="button button--primary" type="submit"<?= $formEnabled ? '' : ' disabled aria-disabled="true"' ?>>Send message</button>
+            </form>
         </section>
 <?php
 require __DIR__ . '/includes/footer.php';

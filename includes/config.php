@@ -29,6 +29,24 @@ if (! defined('CONTACT_FORM_TO_EMAIL')) {
 if (! defined('CONTACT_FORM_SUBJECT_PREFIX')) {
     define('CONTACT_FORM_SUBJECT_PREFIX', '[Website]');
 }
+if (! defined('CONTACT_FORM_FROM_EMAIL')) {
+    define('CONTACT_FORM_FROM_EMAIL', '');
+}
+if (! defined('CONTACT_SMTP_HOST')) {
+    define('CONTACT_SMTP_HOST', '');
+}
+if (! defined('CONTACT_SMTP_PORT')) {
+    define('CONTACT_SMTP_PORT', 587);
+}
+if (! defined('CONTACT_SMTP_USERNAME')) {
+    define('CONTACT_SMTP_USERNAME', '');
+}
+if (! defined('CONTACT_SMTP_PASSWORD')) {
+    define('CONTACT_SMTP_PASSWORD', '');
+}
+if (! defined('CONTACT_SMTP_ENCRYPTION')) {
+    define('CONTACT_SMTP_ENCRYPTION', 'tls');
+}
 
 require_once __DIR__ . '/util.php';
 require_once __DIR__ . '/markdown.php';
