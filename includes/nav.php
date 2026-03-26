@@ -27,5 +27,6 @@ function nav_link(string $href, string $label, string $id, string $currentNav): 
         <?= nav_link(url_home(), 'Home', 'home', $currentNav) ?>
         <?= nav_link(url_projects(), 'Projects', 'projects', $currentNav) ?>
         <?= nav_link(url_blog(), 'Blog', 'blog', $currentNav) ?>
+        <?= nav_link(url_contact(), 'Contact', 'contact', $currentNav) ?>
     </div>
 </nav>

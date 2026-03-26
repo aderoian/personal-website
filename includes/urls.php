@@ -26,6 +26,12 @@ function url_blog(): string
     return $p === '' ? '/blog' : $p . '/blog';
 }
 
+function url_contact(): string
+{
+    $p = url_prefix();
+    return $p === '' ? '/contact' : $p . '/contact';
+}
+
 function url_blog_post(string $slug): string
 {
     $p = url_prefix();

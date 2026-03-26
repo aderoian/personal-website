@@ -8,3 +8,10 @@ declare(strict_types=1);
  *   php -r 'echo password_hash("your-secret-password", PASSWORD_DEFAULT), "\n";'
  */
 // const ADMIN_PASSWORD_HASH = '$2y$10$...';
+
+/**
+ * Optional: receive contact form submissions without making your email public.
+ * Example:
+ *   const CONTACT_FORM_TO_EMAIL = 'you@example.com';
+ */
+// const CONTACT_FORM_TO_EMAIL = 'you@example.com';

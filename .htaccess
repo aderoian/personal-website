@@ -14,6 +14,7 @@ Options -Indexes -MultiViews
     RewriteRule ^admin(?:/.*)?$ admin.php [L,QSA]
     RewriteRule ^projects/?$ projects.php [L]
     RewriteRule ^blog/?$ blog.php [L]
+    RewriteRule ^contact/?$ contact.php [L]
     RewriteRule ^blog/([^/]+)/?$ blog_post.php?slug=$1 [L,QSA]
     RewriteRule ^project/([^/]+)/?$ project.php?slug=$1 [L,QSA]
 </IfModule>

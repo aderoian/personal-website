@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * Dev server: php -S localhost:8000 router.php
- * Serves clean URLs (/ , /projects , /project/{slug}) like Apache with .htaccess.
+ * Serves clean URLs (/ , /projects , /blog , /contact , /project/{slug}) like Apache with .htaccess.
  */
 require_once __DIR__ . '/includes/config.php';
 
@@ -30,6 +30,11 @@ if ($path === '/projects') {
 
 if ($path === '/blog') {
     require __DIR__ . '/blog.php';
+    return true;
+}
+
+if ($path === '/contact') {
+    require __DIR__ . '/contact.php';
     return true;
 }
 
