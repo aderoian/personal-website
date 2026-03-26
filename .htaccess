@@ -11,7 +11,10 @@ Options -Indexes -MultiViews
 
     # Pretty routes (must come after the rule above)
     RewriteRule ^$ index.php [L]
+    RewriteRule ^admin(?:/.*)?$ admin.php [L,QSA]
     RewriteRule ^projects/?$ projects.php [L]
+    RewriteRule ^blog/?$ blog.php [L]
+    RewriteRule ^blog/([^/]+)/?$ blog_post.php?slug=$1 [L,QSA]
     RewriteRule ^project/([^/]+)/?$ project.php?slug=$1 [L,QSA]
 </IfModule>
 

@@ -79,7 +79,7 @@ $tags = isset($project['tags']) && is_array($project['tags']) ? $project['tags']
             </figure>
 
             <div class="project-detail__body prose">
-                <?= (string) $project['body'] ?>
+                <?= render_markdown((string) $project['body']) ?>
             </div>
 
             <?php if ($embedSrc !== ''): ?>

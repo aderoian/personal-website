@@ -2,32 +2,39 @@
 
 declare(strict_types=1);
 
+/** @var list<array<string, mixed>>|null */
+$GLOBALS['projects_cache'] = null;
+
+function clear_projects_cache(): void
+{
+    $GLOBALS['projects_cache'] = null;
+}
+
 /**
  * @return list<array<string, mixed>>
  */
 function load_projects(): array
 {
-    static $cache = null;
-    if ($cache !== null) {
-        return $cache;
+    if ($GLOBALS['projects_cache'] !== null) {
+        return $GLOBALS['projects_cache'];
     }
 
     $path = dirname(__DIR__) . '/data/projects.json';
     if (! is_readable($path)) {
-        $cache = [];
-        return $cache;
+        $GLOBALS['projects_cache'] = [];
+        return $GLOBALS['projects_cache'];
     }
 
     $raw = file_get_contents($path);
     if ($raw === false) {
-        $cache = [];
-        return $cache;
+        $GLOBALS['projects_cache'] = [];
+        return $GLOBALS['projects_cache'];
     }
 
     $decoded = json_decode($raw, true);
     if (! is_array($decoded)) {
-        $cache = [];
-        return $cache;
+        $GLOBALS['projects_cache'] = [];
+        return $GLOBALS['projects_cache'];
     }
 
     $required = ['slug', 'title', 'short_description', 'summary', 'body', 'image', 'featured_order'];
@@ -59,8 +66,8 @@ function load_projects(): array
             ?: strcmp($a['slug'], $b['slug'])
     );
 
-    $cache = $list;
-    return $cache;
+    $GLOBALS['projects_cache'] = $list;
+    return $GLOBALS['projects_cache'];
 }
 
 /** Slug from rewrite query string, PATH_INFO, or some Apache redirect env vars. */
@@ -103,7 +110,9 @@ function featured_projects(int $n): array
     return array_slice(load_projects(), 0, $n);
 }
 
-function e(string $s): string
-{
-    return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+if (! function_exists('e')) {
+    function e(string $s): string
+    {
+        return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
 }

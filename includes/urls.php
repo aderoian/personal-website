@@ -20,6 +20,19 @@ function url_projects(): string
     return $p === '' ? '/projects' : $p . '/projects';
 }
 
+function url_blog(): string
+{
+    $p = url_prefix();
+    return $p === '' ? '/blog' : $p . '/blog';
+}
+
+function url_blog_post(string $slug): string
+{
+    $p = url_prefix();
+    $s = rawurlencode($slug);
+    return $p === '' ? '/blog/' . $s : $p . '/blog/' . $s;
+}
+
 function url_project(string $slug): string
 {
     $p = url_prefix();

@@ -1,0 +1,10 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copy to config.local.php (do not commit) and set a bcrypt hash:
+ *
+ *   php -r 'echo password_hash("your-secret-password", PASSWORD_DEFAULT), "\n";'
+ */
+// const ADMIN_PASSWORD_HASH = '$2y$10$...';

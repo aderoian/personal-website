@@ -28,6 +28,22 @@ if ($path === '/projects') {
     return true;
 }
 
+if ($path === '/blog') {
+    require __DIR__ . '/blog.php';
+    return true;
+}
+
+if (str_starts_with($path, '/admin')) {
+    require __DIR__ . '/admin.php';
+    return true;
+}
+
+if (preg_match('#^/blog/([^/]+)$#', $path, $m)) {
+    $_GET['slug'] = rawurldecode($m[1]);
+    require __DIR__ . '/blog_post.php';
+    return true;
+}
+
 if (preg_match('#^/project/([^/]+)$#', $path, $m)) {
     $_GET['slug'] = rawurldecode($m[1]);
     require __DIR__ . '/project.php';
