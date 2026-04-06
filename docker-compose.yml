@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      # Persist blog/projects JSON when using the admin UI
+      - ./data:/var/www/html/data
+      # After creating includes/config.local.php (see .example), add:
+      - ./includes/config.local.php:/var/www/html/includes/config.local.php:ro

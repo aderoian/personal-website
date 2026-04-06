@@ -35,12 +35,15 @@ require __DIR__ . '/includes/header.php';
             <div class="hero__body">
                 <p class="hero__lead">
                 I’m a systems-focused developer who enjoys building efficient, 
-                reliable software—from network servers and game engines to developer tooling. 
+                reliable software from network servers and game engines to developer tooling. 
                 My work emphasizes clean architecture, predictable behavior under load, and practical performance.
                 </p>
                 <p class="hero__text">
-                    This site is a snapshot of what I’ve been building recently. To see those projects, explore featured work below or browse the
-                    <a href="<?= e(url_projects()) ?>">full project list</a>.
+                    This site is a snapshot of what I’ve been building or have worked on. To see those projects, 
+                    explore featured work below or browse the
+                    <a href="<?= e(url_projects()) ?>">full project list</a>. You can also view some of my write-ups 
+                    in the <a href="<?= e(url_blog()) ?>">blog</a>. If you are interested in a project, 
+                    feel free to reach out to me. You can find my contact information in the <a href="<?= e(url_contact()) ?>">contact</a> page.
                 </p>
             </div>
         </section>
