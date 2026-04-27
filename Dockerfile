@@ -6,9 +6,17 @@ RUN a2enmod rewrite
 
 WORKDIR /var/www/html
 
+COPY docker-entrypoint.sh /usr/local/bin/personal-website-entrypoint.sh
+RUN chmod +x /usr/local/bin/personal-website-entrypoint.sh
+
 COPY . /var/www/html/
+# Script is only needed in /usr/local/bin, not in the document root
+RUN rm -f /var/www/html/docker-entrypoint.sh
 
 RUN chown -R www-data:www-data /var/www/html/data \
     && chmod -R u+rwX /var/www/html/data
+
+ENTRYPOINT ["/usr/local/bin/personal-website-entrypoint.sh"]
+CMD ["apache2-foreground"]
 
 EXPOSE 80

@@ -102,7 +102,7 @@ function normalize_project_for_storage(array $row): ?array
     $body = $row['body'];
 
     $image = isset($row['image']) && is_string($row['image']) ? trim($row['image']) : '';
-    if ($image === '' || ! is_valid_project_image_path($image)) {
+    if ($image !== '' && ! is_valid_project_image_path($image)) {
         return null;
     }
 
@@ -159,18 +159,6 @@ function normalize_project_for_storage(array $row): ?array
     }
 
     return $out;
-}
-
-function is_valid_project_image_path(string $path): bool
-{
-    if (str_contains($path, '..') || str_contains($path, "\0")) {
-        return false;
-    }
-    $path = ltrim($path, '/');
-    if (! str_starts_with($path, 'assets/')) {
-        return false;
-    }
-    return (bool) preg_match('#^assets/[a-zA-Z0-9._/-]+$#', $path);
 }
 
 /**

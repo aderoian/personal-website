@@ -37,7 +37,7 @@ function load_projects(): array
         return $GLOBALS['projects_cache'];
     }
 
-    $required = ['slug', 'title', 'short_description', 'summary', 'body', 'image', 'featured_order'];
+    $required = ['slug', 'title', 'short_description', 'summary', 'body', 'featured_order'];
     $list = [];
     foreach ($decoded as $row) {
         if (! is_array($row)) {
@@ -57,6 +57,11 @@ function load_projects(): array
         if (! $ok) {
             continue;
         }
+        $image = isset($row['image']) && is_string($row['image']) ? trim($row['image']) : '';
+        if ($image !== '' && ! is_valid_project_image_path($image)) {
+            continue;
+        }
+        $row['image'] = $image;
         $list[] = $row;
     }
 
@@ -108,6 +113,51 @@ function featured_projects(int $n): array
         return [];
     }
     return array_slice(load_projects(), 0, $n);
+}
+
+function is_valid_project_image_path(string $path): bool
+{
+    if (str_contains($path, '..') || str_contains($path, "\0")) {
+        return false;
+    }
+    $path = ltrim($path, '/');
+    if (! str_starts_with($path, 'assets/')) {
+        return false;
+    }
+    return (bool) preg_match('#^assets/[a-zA-Z0-9._/-]+$#', $path);
+}
+
+/**
+ * @return list<string>
+ */
+function project_placeholder_image_paths(): array
+{
+    return [
+        'assets/projects/placeholders/abstract-panels.svg',
+        'assets/projects/placeholders/grid-flow.svg',
+        'assets/projects/placeholders/pipeline.svg',
+        'assets/projects/placeholders/node-graph.svg',
+        'assets/projects/placeholders/layers.svg',
+    ];
+}
+
+/**
+ * Asset path for project imagery: the stored image, or a stable generic placeholder by slug.
+ */
+function project_effective_image_path(array $p): string
+{
+    $image = isset($p['image']) && is_string($p['image']) ? trim($p['image']) : '';
+    if ($image !== '') {
+        return $image;
+    }
+    $placeholders = project_placeholder_image_paths();
+    if ($placeholders === []) {
+        return '';
+    }
+    $slug = isset($p['slug']) && is_string($p['slug']) ? $p['slug'] : 'project';
+    $h = (crc32($slug) & 0x7fffffff) % count($placeholders);
+
+    return $placeholders[$h];
 }
 
 if (! function_exists('e')) {

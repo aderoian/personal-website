@@ -188,7 +188,7 @@ if ($method === 'POST') {
         $row = admin_post_project_from_request();
         $normalized = normalize_project_for_storage($row);
         if ($normalized === null) {
-            admin_set_flash('Could not save: check all required fields, slug format, image path (assets/…), and URLs.', 'error');
+            admin_set_flash('Could not save: check all required fields, slug format, image path if set (assets/…), and URLs.', 'error');
             $slug = $row['slug'] ?? '';
             $slug = is_string($slug) ? $slug : '';
             if ($oldSlug !== '') {

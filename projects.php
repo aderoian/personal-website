@@ -30,18 +30,21 @@ require __DIR__ . '/includes/header.php';
         <?php else: ?>
             <ul class="card-grid card-grid--projects">
                 <?php foreach ($all as $p): ?>
+                    <?php $cardImage = project_effective_image_path($p); ?>
                     <li>
                         <article class="card card--project">
-                            <a class="card__image-link" href="<?= e(url_project((string) $p['slug'])) ?>">
-                                <img
-                                    class="card__image"
-                                    src="<?= e(url_asset((string) $p['image'])) ?>"
-                                    alt=""
-                                    width="640"
-                                    height="360"
-                                    loading="lazy"
-                                >
-                            </a>
+                            <?php if ($cardImage !== ''): ?>
+                                <a class="card__image-link" href="<?= e(url_project((string) $p['slug'])) ?>">
+                                    <img
+                                        class="card__image"
+                                        src="<?= e(url_asset($cardImage)) ?>"
+                                        alt=""
+                                        width="640"
+                                        height="360"
+                                        loading="lazy"
+                                    >
+                                </a>
+                            <?php endif; ?>
                             <div class="card__body">
                                 <h2 class="card__title">
                                     <a href="<?= e(url_project((string) $p['slug'])) ?>">

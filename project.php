@@ -40,6 +40,7 @@ $demoUrl = isset($project['demo_url']) && is_string($project['demo_url']) ? trim
 $repoUrl = isset($project['repo_url']) && is_string($project['repo_url']) ? trim($project['repo_url']) : '';
 $embedSrc = isset($project['demo_embed_src']) && is_string($project['demo_embed_src']) ? trim($project['demo_embed_src']) : '';
 $tags = isset($project['tags']) && is_array($project['tags']) ? $project['tags'] : [];
+$projectImage = project_effective_image_path($project);
 ?>
         <article class="project-detail">
             <header class="project-detail__header">
@@ -67,16 +68,18 @@ $tags = isset($project['tags']) && is_array($project['tags']) ? $project['tags']
                 </ul>
             </header>
 
-            <figure class="project-detail__figure">
-                <img
-                    class="project-detail__image"
-                    src="<?= e(url_asset((string) $project['image'])) ?>"
-                    alt=""
-                    width="960"
-                    height="540"
-                    loading="lazy"
-                >
-            </figure>
+            <?php if ($projectImage !== ''): ?>
+                <figure class="project-detail__figure">
+                    <img
+                        class="project-detail__image"
+                        src="<?= e(url_asset($projectImage)) ?>"
+                        alt=""
+                        width="960"
+                        height="540"
+                        loading="lazy"
+                    >
+                </figure>
+            <?php endif; ?>
 
             <div class="project-detail__body prose">
                 <?= render_markdown((string) $project['body']) ?>

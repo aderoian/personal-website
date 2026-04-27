@@ -1,86 +1,114 @@
 [
-  {
-    "slug": "synthorcha",
-    "title": "Synthorcha",
-    "short_description": "C++ LLM agent and agentic orchestration framework built on llama.cpp.",
-    "summary": "A native C++ framework for building LLM-backed agents and multi-step orchestration workflows on top of llama.cpp, aimed at local and self-hosted inference.",
-    "body": "<p>Synthorcha targets developers who want agentic behavior close to the metal: orchestration, tooling, and model execution without leaving the C++ ecosystem when that fits your deployment model.</p><h3>Highlights</h3><ul><li>Built on <strong>llama.cpp</strong> for efficient local inference</li><li>Agent-focused architecture for scripted and autonomous flows</li><li>MIT-licensed</li></ul>",
-    "image": "assets/projects/taskflow.svg",
-    "featured_order": 1,
-    "year": 2026,
-    "tags": ["C++", "AI", "llama.cpp"],
-    "repo_url": "https://github.com/aderoian/synthorcha"
-  },
-  {
-    "slug": "simplewiki",
-    "title": "SimpleWiki",
-    "short_description": "Lightweight wiki authoring with Markdown.",
-    "summary": "A TypeScript project for spinning up a small, readable wiki from Markdown content—minimal ceremony compared to full CMS stacks.",
-    "body": "<p>Authors stay in Git-friendly Markdown while readers get a simple wiki experience. Good fit for documentation sites or personal knowledge bases that do not need a database-heavy CMS.</p><h3>Highlights</h3><ul><li>Markdown-first content</li><li>TypeScript implementation</li><li>Easy to adapt for static or semi-static hosting</li></ul>",
-    "image": "assets/projects/riverrun.svg",
-    "featured_order": 5,
-    "year": 2024,
-    "tags": ["TypeScript", "Markdown", "Wiki"],
-    "repo_url": "https://github.com/aderoian/SimpleWiki"
-  },
-  {
-    "slug": "box-physics",
-    "title": "Box physics",
-    "short_description": "Educational square-based 3D physics engine in C.",
-    "summary": "A compact C engine focused on box primitives—useful for learning collision response, integration, and 3D simulation basics without a full game engine.",
-    "body": "<p>The emphasis is clarity over feature bloat: rigid boxes, predictable numerics, and room to extend with joints or more shapes later.</p><h3>Stack</h3><ul><li>C</li><li>3D math and collision</li><li>Teaching-oriented structure</li></ul>",
-    "image": "assets/projects/taskflow.svg",
-    "featured_order": 2,
-    "year": 2026,
-    "tags": ["C", "Physics", "3D"],
-    "repo_url": "https://github.com/aderoian/box-physics"
-  },
-  {
-    "slug": "modpack-updater",
-    "title": "ModpackUpdater",
-    "short_description": "Minecraft mod, REST API, and update flow for modpacks on the fly.",
-    "summary": "Java tooling that ties together in-game behavior, a REST API, and scripts so modpacks can be refreshed without fully manual installs.",
-    "body": "<p>ModpackUpdater is aimed at servers or communities that iterate on curated packs often. The API and script layer automate checks and apply updates in a controlled way.</p><h3>Components</h3><ul><li>Minecraft mod integration</li><li>REST API for update metadata</li><li>Update script for pack maintenance</li></ul>",
-    "image": "assets/projects/lumina.svg",
-    "featured_order": 7,
-    "year": 2025,
-    "tags": ["Java", "Minecraft", "REST API"],
-    "repo_url": "https://github.com/aderoian/ModpackUpdater"
-  },
-  {
-    "slug": "stratos",
-    "title": "Stratos",
-    "short_description": "Work-in-progress C++ server software for Minecraft.",
-    "summary": "A native C++ take on Minecraft server technology—performance and control goals typical of custom server implementations.",
-    "body": "<p>Stratos is explicitly marked as WIP; the repository tracks protocol handling, world simulation, and server architecture experiments in C++.</p><h3>Why it’s interesting</h3><ul><li>Server-side C++ instead of the usual JVM stack</li><li>Room to optimize hot paths for large player counts</li></ul>",
-    "image": "assets/projects/bytepack.svg",
-    "featured_order": 3,
-    "year": 2025,
-    "tags": ["C++", "Minecraft", "Server"],
-    "repo_url": "https://github.com/aderoian/Stratos"
-  },
-  {
-    "slug": "physics-engine",
-    "title": "Physics engine",
-    "short_description": "Rigid body physics simulation in C.",
-    "summary": "A C project dedicated to simulating rigid bodies—complements the box-centric engine with a broader rigid-body focus.",
-    "body": "<p>Useful as a reference for integrators, constraint ideas, and stable stacking. Pairs well with graphics or game prototypes that need deterministic physics cores.</p><h3>Highlights</h3><ul><li>Rigid body dynamics</li><li>C for portability and embedding</li></ul>",
-    "image": "assets/projects/riverrun.svg",
-    "featured_order": 4,
-    "year": 2025,
-    "tags": ["C", "Physics", "Simulation"],
-    "repo_url": "https://github.com/aderoian/physics-engine"
-  },
-  {
-    "slug": "brain-stone",
-    "title": "BrainStone",
-    "short_description": "Minecraft mod extending base security capabilities.",
-    "summary": "A Java Minecraft mod that adds defensive and security-themed mechanics so bases feel harder to breach without resorting to pure admin rules.",
-    "body": "<p>BrainStone explores survival-friendly security: blocks, items, or systems that reward planning and reduce casual griefing while staying in vanilla-adjacent balance.</p>",
-    "image": "assets/projects/bytepack.svg",
-    "featured_order": 6,
-    "year": 2023,
-    "tags": ["Java", "Minecraft", "Security"],
-    "repo_url": "https://github.com/aderoian/BrainStone"
-  }
+    {
+        "slug": "synthorcha",
+        "title": "Synthorcha",
+        "short_description": "C++ LLM agent and agentic orchestration framework built on llama.cpp.",
+        "summary": "A native C++ framework for building LLM-backed agents and multi-step orchestration workflows on top of llama.cpp, aimed at local and self-hosted inference.",
+        "body": "<p>Synthorcha targets developers who want agentic behavior close to the metal: orchestration, tooling, and model execution without leaving the C++ ecosystem when that fits your deployment model.</p><h3>Highlights</h3><ul><li>Built on <strong>llama.cpp</strong> for efficient local inference</li><li>Agent-focused architecture for scripted and autonomous flows</li><li>MIT-licensed</li></ul>",
+        "image": "",
+        "featured_order": 1,
+        "year": 2026,
+        "tags": [
+            "C++",
+            "AI",
+            "llama.cpp"
+        ],
+        "repo_url": "https://github.com/aderoian/synthorcha"
+    },
+    {
+        "slug": "box-physics",
+        "title": "Box physics",
+        "short_description": "Educational square-based 3D physics engine in C.",
+        "summary": "A compact C engine focused on box primitives—useful for learning collision response, integration, and 3D simulation basics without a full game engine.",
+        "body": "<p>The emphasis is clarity over feature bloat: rigid boxes, predictable numerics, and room to extend with joints or more shapes later.</p><h3>Stack</h3><ul><li>C</li><li>3D math and collision</li><li>Teaching-oriented structure</li></ul>",
+        "image": "assets/projects/taskflow.svg",
+        "featured_order": 2,
+        "year": 2026,
+        "tags": [
+            "C",
+            "Physics",
+            "3D"
+        ],
+        "repo_url": "https://github.com/aderoian/box-physics"
+    },
+    {
+        "slug": "stratos",
+        "title": "Stratos",
+        "short_description": "Work-in-progress C++ server software for Minecraft.",
+        "summary": "A native C++ take on Minecraft server technology—performance and control goals typical of custom server implementations.",
+        "body": "<p>Stratos is explicitly marked as WIP; the repository tracks protocol handling, world simulation, and server architecture experiments in C++.</p><h3>Why it’s interesting</h3><ul><li>Server-side C++ instead of the usual JVM stack</li><li>Room to optimize hot paths for large player counts</li></ul>",
+        "image": "assets/projects/bytepack.svg",
+        "featured_order": 3,
+        "year": 2025,
+        "tags": [
+            "C++",
+            "Minecraft",
+            "Server"
+        ],
+        "repo_url": "https://github.com/aderoian/Stratos"
+    },
+    {
+        "slug": "physics-engine",
+        "title": "Physics engine",
+        "short_description": "Rigid body physics simulation in C.",
+        "summary": "A C project dedicated to simulating rigid bodies—complements the box-centric engine with a broader rigid-body focus.",
+        "body": "<p>Useful as a reference for integrators, constraint ideas, and stable stacking. Pairs well with graphics or game prototypes that need deterministic physics cores.</p><h3>Highlights</h3><ul><li>Rigid body dynamics</li><li>C for portability and embedding</li></ul>",
+        "image": "assets/projects/riverrun.svg",
+        "featured_order": 4,
+        "year": 2025,
+        "tags": [
+            "C",
+            "Physics",
+            "Simulation"
+        ],
+        "repo_url": "https://github.com/aderoian/physics-engine"
+    },
+    {
+        "slug": "simplewiki",
+        "title": "SimpleWiki",
+        "short_description": "Lightweight wiki authoring with Markdown.",
+        "summary": "A TypeScript project for spinning up a small, readable wiki from Markdown content—minimal ceremony compared to full CMS stacks.",
+        "body": "<p>Authors stay in Git-friendly Markdown while readers get a simple wiki experience. Good fit for documentation sites or personal knowledge bases that do not need a database-heavy CMS.</p><h3>Highlights</h3><ul><li>Markdown-first content</li><li>TypeScript implementation</li><li>Easy to adapt for static or semi-static hosting</li></ul>",
+        "image": "assets/projects/riverrun.svg",
+        "featured_order": 5,
+        "year": 2024,
+        "tags": [
+            "TypeScript",
+            "Markdown",
+            "Wiki"
+        ],
+        "repo_url": "https://github.com/aderoian/SimpleWiki"
+    },
+    {
+        "slug": "brain-stone",
+        "title": "BrainStone",
+        "short_description": "Minecraft mod extending base security capabilities.",
+        "summary": "A Java Minecraft mod that adds defensive and security-themed mechanics so bases feel harder to breach without resorting to pure admin rules.",
+        "body": "<p>BrainStone explores survival-friendly security: blocks, items, or systems that reward planning and reduce casual griefing while staying in vanilla-adjacent balance.</p>",
+        "image": "assets/projects/bytepack.svg",
+        "featured_order": 6,
+        "year": 2023,
+        "tags": [
+            "Java",
+            "Minecraft",
+            "Security"
+        ],
+        "repo_url": "https://github.com/aderoian/BrainStone"
+    },
+    {
+        "slug": "modpack-updater",
+        "title": "ModpackUpdater",
+        "short_description": "Minecraft mod, REST API, and update flow for modpacks on the fly.",
+        "summary": "Java tooling that ties together in-game behavior, a REST API, and scripts so modpacks can be refreshed without fully manual installs.",
+        "body": "<p>ModpackUpdater is aimed at servers or communities that iterate on curated packs often. The API and script layer automate checks and apply updates in a controlled way.</p><h3>Components</h3><ul><li>Minecraft mod integration</li><li>REST API for update metadata</li><li>Update script for pack maintenance</li></ul>",
+        "image": "assets/projects/lumina.svg",
+        "featured_order": 7,
+        "year": 2025,
+        "tags": [
+            "Java",
+            "Minecraft",
+            "REST API"
+        ],
+        "repo_url": "https://github.com/aderoian/ModpackUpdater"
+    }
 ]

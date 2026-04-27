@@ -34,8 +34,8 @@ require __DIR__ . '/includes/header.php';
             </div>
             <div class="hero__body">
                 <p class="hero__lead">
-                I’m a systems-focused developer who enjoys building efficient, 
-                reliable software from network servers and game engines to developer tooling. 
+                I’m a systems and software engineer focused on building efficient, scalable, and
+                reliable software from network servers and game engines to developer tooling. I enjoy working on a wide range of projects, from small tools to large systems.
                 My work emphasizes clean architecture, predictable behavior under load, and practical performance.
                 </p>
                 <p class="hero__text">
@@ -58,18 +58,21 @@ require __DIR__ . '/includes/header.php';
             <?php else: ?>
                 <ul class="card-grid">
                     <?php foreach ($featured as $p): ?>
+                        <?php $cardImage = project_effective_image_path($p); ?>
                         <li>
                             <article class="card">
-                                <a class="card__image-link" href="<?= e(url_project((string) $p['slug'])) ?>">
-                                    <img
-                                        class="card__image"
-                                        src="<?= e(url_asset((string) $p['image'])) ?>"
-                                        alt=""
-                                        width="640"
-                                        height="360"
-                                        loading="lazy"
-                                    >
-                                </a>
+                                <?php if ($cardImage !== ''): ?>
+                                    <a class="card__image-link" href="<?= e(url_project((string) $p['slug'])) ?>">
+                                        <img
+                                            class="card__image"
+                                            src="<?= e(url_asset($cardImage)) ?>"
+                                            alt=""
+                                            width="640"
+                                            height="360"
+                                            loading="lazy"
+                                        >
+                                    </a>
+                                <?php endif; ?>
                                 <div class="card__body">
                                     <h3 class="card__title">
                                         <a href="<?= e(url_project((string) $p['slug'])) ?>">

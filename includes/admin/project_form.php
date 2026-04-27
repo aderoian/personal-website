@@ -73,8 +73,8 @@ $flash = admin_take_flash();
         </div>
 
         <label>
-            Image path <span class="admin-muted">(e.g. assets/projects/name.svg)</span>
-            <input type="text" name="image" required value="<?= e($imageVal) ?>" placeholder="assets/projects/…">
+            Image path <span class="admin-muted">(optional; e.g. assets/projects/name.svg; leave empty for a generic placeholder)</span>
+            <input type="text" name="image" value="<?= e($imageVal) ?>" placeholder="assets/projects/…">
         </label>
 
         <div class="admin-project-form__grid admin-project-form__grid--2">
