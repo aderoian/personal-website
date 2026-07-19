@@ -9,6 +9,8 @@ services:
       # Must match the URL you use in the browser (host + published port).
       - ORIGIN=${ORIGIN:-http://localhost:8080}
       - DATA_DIR=/app/data
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET:-}
       - CONTACT_FORM_TO_EMAIL=${CONTACT_FORM_TO_EMAIL:-}
       - CONTACT_FORM_FROM_EMAIL=${CONTACT_FORM_FROM_EMAIL:-}
       - CONTACT_FORM_SUBJECT_PREFIX=${CONTACT_FORM_SUBJECT_PREFIX:-[Website]}
@@ -18,5 +20,6 @@ services:
       - CONTACT_SMTP_PASSWORD=${CONTACT_SMTP_PASSWORD:-}
       - CONTACT_SMTP_ENCRYPTION=${CONTACT_SMTP_ENCRYPTION:-tls}
     volumes:
-      - ./data:/app/data:ro
+      # Writable persistent mount for admin content edits (projects.json / blog.json).
+      - ./data:/app/data
     restart: unless-stopped

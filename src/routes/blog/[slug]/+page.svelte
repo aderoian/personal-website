@@ -1,6 +1,7 @@
 <script lang="ts">
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import TagList from '$lib/components/TagList.svelte';
+	import ProseContent from '$lib/components/ProseContent.svelte';
 	import { formatBlogDate } from '$lib/schemas/blog-post';
 	import type { PageData } from './$types';
 
@@ -28,7 +29,5 @@
 		{/if}
 	</header>
 
-	<div class="prose-content">
-		{@html data.bodyHtml}
-	</div>
+	<ProseContent html={data.bodyHtml} />
 </article>

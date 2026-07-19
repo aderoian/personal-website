@@ -2,6 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import TagList from '$lib/components/TagList.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import ProseContent from '$lib/components/ProseContent.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -55,9 +56,7 @@
 		/>
 	</figure>
 
-	<div class="prose-content">
-		{@html data.bodyHtml}
-	</div>
+	<ProseContent html={data.bodyHtml} />
 
 	{#if project.demo_embed_src}
 		<section class="panel mt-10 p-6" aria-labelledby="demo-heading">

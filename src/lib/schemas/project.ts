@@ -37,7 +37,8 @@ export const projectSchema = z.object({
 	tags: z.array(z.string().trim().min(1)).optional(),
 	repo_url: optionalUrlSchema,
 	demo_url: optionalUrlSchema,
-	demo_embed_src: optionalUrlSchema
+	demo_embed_src: optionalUrlSchema,
+	published: z.boolean().optional().default(true)
 });
 
 export const projectsFileSchema = z.array(projectSchema).superRefine((projects, ctx) => {
@@ -82,6 +83,10 @@ export function sortProjects(projects: Project[]): Project[] {
 	);
 }
 
+export function publishedProjects(projects: Project[]): Project[] {
+	return sortProjects(projects.filter((project) => project.published));
+}
+
 export function featuredProjects(projects: Project[], count: number): Project[] {
-	return sortProjects(projects).slice(0, Math.max(0, count));
+	return publishedProjects(projects).slice(0, Math.max(0, count));
 }

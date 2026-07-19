@@ -3,6 +3,7 @@ import {
 	featuredProjects,
 	projectEffectiveImage,
 	projectSchema,
+	publishedProjects,
 	sortProjects
 } from '$lib/schemas/project';
 import {
@@ -23,7 +24,8 @@ const sampleProject = {
 	featured_order: 2,
 	year: 2026,
 	tags: ['TypeScript'],
-	repo_url: 'https://github.com/example/repo'
+	repo_url: 'https://github.com/example/repo',
+	published: true
 };
 
 const samplePost = {
@@ -38,7 +40,26 @@ const samplePost = {
 
 describe('project schema', () => {
 	it('validates a complete project', () => {
-		expect(projectSchema.parse(sampleProject)).toMatchObject({ slug: 'test-project' });
+		expect(projectSchema.parse(sampleProject)).toMatchObject({
+			slug: 'test-project',
+			published: true
+		});
+	});
+
+	it('defaults published to true when omitted', () => {
+		const withoutPublished = {
+			slug: sampleProject.slug,
+			title: sampleProject.title,
+			short_description: sampleProject.short_description,
+			summary: sampleProject.summary,
+			body: sampleProject.body,
+			image: sampleProject.image,
+			featured_order: sampleProject.featured_order,
+			year: sampleProject.year,
+			tags: sampleProject.tags,
+			repo_url: sampleProject.repo_url
+		};
+		expect(projectSchema.parse(withoutPublished).published).toBe(true);
 	});
 
 	it('rejects invalid slugs', () => {
@@ -51,6 +72,16 @@ describe('project schema', () => {
 			{ ...sampleProject, slug: 'a', featured_order: 1 }
 		]);
 		expect(sorted.map((p) => p.slug)).toEqual(['a', 'b']);
+	});
+
+	it('filters unpublished projects from public helpers', () => {
+		const projects = [
+			{ ...sampleProject, slug: 'a', featured_order: 1, published: true },
+			{ ...sampleProject, slug: 'draft', featured_order: 0, published: false },
+			{ ...sampleProject, slug: 'b', featured_order: 2, published: true }
+		];
+		expect(publishedProjects(projects).map((p) => p.slug)).toEqual(['a', 'b']);
+		expect(featuredProjects(projects, 3).map((p) => p.slug)).toEqual(['a', 'b']);
 	});
 
 	it('returns featured subset', () => {

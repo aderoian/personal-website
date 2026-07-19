@@ -23,7 +23,9 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /app/build ./build
 COPY data ./data
 
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup -S app && adduser -S app -G app \
+	&& chown -R app:app /app/data
+
 USER app
 
 EXPOSE 3000

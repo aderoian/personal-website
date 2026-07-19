@@ -8,8 +8,13 @@
 		"image": "",
 		"featured_order": 1,
 		"year": 2026,
-		"tags": ["C++", "AI", "llama.cpp"],
-		"repo_url": "https://github.com/aderoian/synthorcha"
+		"tags": [
+			"C++",
+			"AI",
+			"llama.cpp"
+		],
+		"repo_url": "https://github.com/aderoian/synthorcha",
+		"published": true
 	},
 	{
 		"slug": "box-physics",
@@ -20,8 +25,13 @@
 		"image": "assets/projects/taskflow.svg",
 		"featured_order": 2,
 		"year": 2026,
-		"tags": ["C", "Physics", "3D"],
-		"repo_url": "https://github.com/aderoian/box-physics"
+		"tags": [
+			"C",
+			"Physics",
+			"3D"
+		],
+		"repo_url": "https://github.com/aderoian/box-physics",
+		"published": true
 	},
 	{
 		"slug": "stratos",
@@ -32,8 +42,13 @@
 		"image": "assets/projects/bytepack.svg",
 		"featured_order": 3,
 		"year": 2025,
-		"tags": ["C++", "Minecraft", "Server"],
-		"repo_url": "https://github.com/aderoian/Stratos"
+		"tags": [
+			"C++",
+			"Minecraft",
+			"Server"
+		],
+		"repo_url": "https://github.com/aderoian/Stratos",
+		"published": true
 	},
 	{
 		"slug": "physics-engine",
@@ -44,8 +59,13 @@
 		"image": "assets/projects/riverrun.svg",
 		"featured_order": 4,
 		"year": 2025,
-		"tags": ["C", "Physics", "Simulation"],
-		"repo_url": "https://github.com/aderoian/physics-engine"
+		"tags": [
+			"C",
+			"Physics",
+			"Simulation"
+		],
+		"repo_url": "https://github.com/aderoian/physics-engine",
+		"published": true
 	},
 	{
 		"slug": "simplewiki",
@@ -56,8 +76,13 @@
 		"image": "assets/projects/riverrun.svg",
 		"featured_order": 5,
 		"year": 2024,
-		"tags": ["TypeScript", "Markdown", "Wiki"],
-		"repo_url": "https://github.com/aderoian/SimpleWiki"
+		"tags": [
+			"TypeScript",
+			"Markdown",
+			"Wiki"
+		],
+		"repo_url": "https://github.com/aderoian/SimpleWiki",
+		"published": true
 	},
 	{
 		"slug": "brain-stone",
@@ -68,8 +93,13 @@
 		"image": "assets/projects/bytepack.svg",
 		"featured_order": 6,
 		"year": 2023,
-		"tags": ["Java", "Minecraft", "Security"],
-		"repo_url": "https://github.com/aderoian/BrainStone"
+		"tags": [
+			"Java",
+			"Minecraft",
+			"Security"
+		],
+		"repo_url": "https://github.com/aderoian/BrainStone",
+		"published": true
 	},
 	{
 		"slug": "modpack-updater",
@@ -80,7 +110,12 @@
 		"image": "assets/projects/lumina.svg",
 		"featured_order": 7,
 		"year": 2025,
-		"tags": ["Java", "Minecraft", "REST API"],
-		"repo_url": "https://github.com/aderoian/ModpackUpdater"
+		"tags": [
+			"Java",
+			"Minecraft",
+			"REST API"
+		],
+		"repo_url": "https://github.com/aderoian/ModpackUpdater",
+		"published": true
 	}
 ]
