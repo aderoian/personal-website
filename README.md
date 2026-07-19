@@ -74,6 +74,8 @@ Site available at [http://localhost:8080](http://localhost:8080).
 
 The container runs the adapter-node build on port 3000, mapped to host port 8080. Content JSON is mounted read-only from `./data`.
 
+Set `ORIGIN` to the URL you use in the browser (default `http://localhost:8080`). If you open the site as `http://127.0.0.1:8080` instead, set `ORIGIN=http://127.0.0.1:8080` — a mismatch causes **Cross-site POST form submissions are forbidden** on form actions.
+
 ## Deployment
 
 Production builds output to `build/` via adapter-node. Run with:

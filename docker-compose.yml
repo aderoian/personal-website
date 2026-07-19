@@ -6,6 +6,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      # Must match the URL you use in the browser (host + published port).
+      - ORIGIN=${ORIGIN:-http://localhost:8080}
       - DATA_DIR=/app/data
       - CONTACT_FORM_TO_EMAIL=${CONTACT_FORM_TO_EMAIL:-}
       - CONTACT_FORM_FROM_EMAIL=${CONTACT_FORM_FROM_EMAIL:-}
