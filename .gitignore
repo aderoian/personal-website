@@ -1,1 +1,26 @@
+# Dependencies
+node_modules
+
+# Output
+.svelte-kit
+build
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Legacy PHP local config
 includes/config.local.php
+
+# Logs
+*.log
+npm-debug.log*

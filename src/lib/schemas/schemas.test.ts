@@ -1,0 +1,120 @@
+import { describe, expect, it } from 'vitest';
+import {
+	featuredProjects,
+	projectEffectiveImage,
+	projectSchema,
+	sortProjects
+} from '$lib/schemas/project';
+import {
+	blogPostSchema,
+	formatBlogDate,
+	publishedBlogPosts,
+	sortBlogPosts
+} from '$lib/schemas/blog-post';
+import { contactFormSchema } from '$lib/schemas/contact';
+
+const sampleProject = {
+	slug: 'test-project',
+	title: 'Test Project',
+	short_description: 'Short',
+	summary: 'Summary',
+	body: '<p>Body</p>',
+	image: '',
+	featured_order: 2,
+	year: 2026,
+	tags: ['TypeScript'],
+	repo_url: 'https://github.com/example/repo'
+};
+
+const samplePost = {
+	slug: 'hello-world',
+	title: 'Hello',
+	summary: 'Summary',
+	body: '# Hello',
+	published: true,
+	published_at: '2026-07-18',
+	updated_at: '2026-07-18T12:00:00Z'
+};
+
+describe('project schema', () => {
+	it('validates a complete project', () => {
+		expect(projectSchema.parse(sampleProject)).toMatchObject({ slug: 'test-project' });
+	});
+
+	it('rejects invalid slugs', () => {
+		expect(() => projectSchema.parse({ ...sampleProject, slug: 'Bad Slug' })).toThrow();
+	});
+
+	it('sorts by featured_order then slug', () => {
+		const sorted = sortProjects([
+			{ ...sampleProject, slug: 'b', featured_order: 2 },
+			{ ...sampleProject, slug: 'a', featured_order: 1 }
+		]);
+		expect(sorted.map((p) => p.slug)).toEqual(['a', 'b']);
+	});
+
+	it('returns featured subset', () => {
+		const featured = featuredProjects(
+			[
+				{ ...sampleProject, slug: 'a', featured_order: 1 },
+				{ ...sampleProject, slug: 'b', featured_order: 2 },
+				{ ...sampleProject, slug: 'c', featured_order: 3 },
+				{ ...sampleProject, slug: 'd', featured_order: 4 }
+			],
+			3
+		);
+		expect(featured).toHaveLength(3);
+	});
+
+	it('assigns stable placeholder images', () => {
+		const image = projectEffectiveImage({ ...sampleProject, image: '' });
+		expect(image).toMatch(/^assets\/projects\/placeholders\//);
+	});
+});
+
+describe('blog schema', () => {
+	it('validates a blog post', () => {
+		expect(blogPostSchema.parse(samplePost).slug).toBe('hello-world');
+	});
+
+	it('filters unpublished posts', () => {
+		const posts = publishedBlogPosts([
+			samplePost,
+			{ ...samplePost, slug: 'draft', published: false }
+		]);
+		expect(posts).toHaveLength(1);
+	});
+
+	it('sorts by published_at descending', () => {
+		const sorted = sortBlogPosts([
+			{ ...samplePost, slug: 'older', published_at: '2026-01-01' },
+			{ ...samplePost, slug: 'newer', published_at: '2026-07-01' }
+		]);
+		expect(sorted[0]?.slug).toBe('newer');
+	});
+
+	it('formats blog dates', () => {
+		expect(formatBlogDate('2026-07-18')).toContain('2026');
+	});
+});
+
+describe('contact schema', () => {
+	it('validates contact form input', () => {
+		const result = contactFormSchema.parse({
+			name: 'Armen',
+			email: 'test@example.com',
+			message: 'Hello'
+		});
+		expect(result.name).toBe('Armen');
+	});
+
+	it('rejects empty messages', () => {
+		expect(() =>
+			contactFormSchema.parse({
+				name: 'Armen',
+				email: 'test@example.com',
+				message: ''
+			})
+		).toThrow();
+	});
+});

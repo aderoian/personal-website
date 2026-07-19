@@ -1,0 +1,142 @@
+@import 'tailwindcss';
+
+@theme {
+	--font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+	--color-bg: #070b14;
+	--color-bg-elevated: #0d1424;
+	--color-bg-panel: #111827;
+	--color-border: #1e3a5f;
+	--color-border-glow: #22d3ee33;
+	--color-text: #e2e8f0;
+	--color-text-muted: #94a3b8;
+	--color-accent: #22d3ee;
+	--color-accent-secondary: #a78bfa;
+	--color-accent-dim: #0891b2;
+
+	--shadow-glow: 0 0 24px #22d3ee22;
+	--shadow-panel: 0 8px 32px #00000066;
+}
+
+@layer base {
+	html {
+		@apply scroll-smooth;
+	}
+
+	body {
+		@apply bg-bg text-text min-h-screen font-sans antialiased;
+		background-image:
+			linear-gradient(#22d3ee08 1px, transparent 1px),
+			linear-gradient(90deg, #22d3ee08 1px, transparent 1px),
+			radial-gradient(ellipse at 20% 0%, #a78bfa12 0%, transparent 50%),
+			radial-gradient(ellipse at 80% 100%, #22d3ee0a 0%, transparent 50%);
+		background-size:
+			48px 48px,
+			48px 48px,
+			auto,
+			auto;
+	}
+
+	::selection {
+		@apply bg-accent/30 text-white;
+	}
+
+	a {
+		@apply text-accent transition-colors duration-200 hover:text-white;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
+
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+	}
+}
+
+@layer components {
+	.panel {
+		@apply border-border bg-bg-panel/80 shadow-panel rounded-lg border backdrop-blur-sm;
+		box-shadow:
+			var(--shadow-panel),
+			inset 0 1px 0 #ffffff08;
+	}
+
+	.panel-glow {
+		@apply border-border bg-bg-panel/80 shadow-panel rounded-lg border backdrop-blur-sm;
+		box-shadow:
+			var(--shadow-glow),
+			var(--shadow-panel),
+			inset 0 1px 0 #ffffff08;
+	}
+
+	.chip {
+		@apply border-border bg-bg-elevated text-accent inline-flex items-center rounded border px-2.5 py-0.5 font-mono text-xs tracking-wide uppercase;
+	}
+
+	.btn {
+		@apply border-border bg-bg-elevated text-text hover:border-accent hover:text-accent focus-visible:ring-accent inline-flex items-center justify-center gap-2 rounded border px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none;
+	}
+
+	.btn-primary {
+		@apply border-accent/50 bg-accent/10 text-accent hover:border-accent hover:bg-accent/20 focus-visible:ring-accent inline-flex items-center justify-center gap-2 rounded border px-4 py-2 text-sm font-medium transition-all duration-200 hover:text-white focus-visible:ring-2 focus-visible:outline-none;
+	}
+
+	.prose-content {
+		@apply text-text-muted max-w-none leading-relaxed;
+
+		& h2,
+		& h3,
+		& h4 {
+			@apply text-text mt-8 mb-3 font-semibold;
+		}
+
+		& h2 {
+			@apply text-xl;
+		}
+
+		& h3 {
+			@apply text-lg;
+		}
+
+		& p {
+			@apply mb-4;
+		}
+
+		& ul,
+		& ol {
+			@apply mb-4 ml-6 list-disc space-y-1;
+		}
+
+		& ol {
+			@apply list-decimal;
+		}
+
+		& a {
+			@apply text-accent underline-offset-2 hover:underline;
+		}
+
+		& strong {
+			@apply text-text font-semibold;
+		}
+
+		& code {
+			@apply bg-bg-elevated text-accent rounded px-1.5 py-0.5 font-mono text-sm;
+		}
+
+		& pre {
+			@apply border-border bg-bg-elevated mb-4 overflow-x-auto rounded border p-4;
+		}
+
+		& pre code {
+			@apply bg-transparent p-0;
+		}
+	}
+}

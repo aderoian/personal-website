@@ -1,22 +1,31 @@
-# Apache + PHP — mirrors production routing via .htaccess (mod_rewrite).
-FROM php:8.3-apache-bookworm
+# syntax=docker/dockerfile:1
 
-# Base image already sets AllowOverride All for /var/www/html (docker-php.conf).
-RUN a2enmod rewrite
+FROM node:24-alpine AS builder
+WORKDIR /app
 
-WORKDIR /var/www/html
+COPY package.json package-lock.json ./
+RUN npm ci
 
-COPY docker-entrypoint.sh /usr/local/bin/personal-website-entrypoint.sh
-RUN chmod +x /usr/local/bin/personal-website-entrypoint.sh
+COPY . .
+RUN npm run build
 
-COPY . /var/www/html/
-# Script is only needed in /usr/local/bin, not in the document root
-RUN rm -f /var/www/html/docker-entrypoint.sh
+FROM node:24-alpine AS runner
+WORKDIR /app
 
-RUN chown -R www-data:www-data /var/www/html/data \
-    && chmod -R u+rwX /var/www/html/data
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
+ENV DATA_DIR=/app/data
 
-ENTRYPOINT ["/usr/local/bin/personal-website-entrypoint.sh"]
-CMD ["apache2-foreground"]
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
-EXPOSE 80
+COPY --from=builder /app/build ./build
+COPY data ./data
+
+RUN addgroup -S app && adduser -S app -G app
+USER app
+
+EXPOSE 3000
+
+CMD ["node", "build/index.js"]

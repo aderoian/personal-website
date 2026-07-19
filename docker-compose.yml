@@ -2,10 +2,19 @@ services:
   web:
     build: .
     ports:
-      - "8080:80"
+      - '8080:3000'
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_DIR=/app/data
+      - CONTACT_FORM_TO_EMAIL=${CONTACT_FORM_TO_EMAIL:-}
+      - CONTACT_FORM_FROM_EMAIL=${CONTACT_FORM_FROM_EMAIL:-}
+      - CONTACT_FORM_SUBJECT_PREFIX=${CONTACT_FORM_SUBJECT_PREFIX:-[Website]}
+      - CONTACT_SMTP_HOST=${CONTACT_SMTP_HOST:-}
+      - CONTACT_SMTP_PORT=${CONTACT_SMTP_PORT:-587}
+      - CONTACT_SMTP_USERNAME=${CONTACT_SMTP_USERNAME:-}
+      - CONTACT_SMTP_PASSWORD=${CONTACT_SMTP_PASSWORD:-}
+      - CONTACT_SMTP_ENCRYPTION=${CONTACT_SMTP_ENCRYPTION:-tls}
     volumes:
-      # Persist blog/projects JSON when using the admin UI. Ownership is fixed at
-      # container start (see docker-entrypoint.sh) so Apache can write the mount.
-      - ./data:/var/www/html/data
-      # After creating includes/config.local.php (see .example), add:
-      - ./includes/config.local.php:/var/www/html/includes/config.local.php:ro
+      - ./data:/app/data:ro
+    restart: unless-stopped
