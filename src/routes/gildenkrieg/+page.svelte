@@ -8,36 +8,63 @@
 	meta={{
 		title: 'Gildenkrieg',
 		description:
-			'Gildenkrieg — a strategic multiplayer experience built around guild warfare, territory control, and emergent team tactics.',
+			'Gildenkrieg: a strategic MMO experience taking place across the universe built around guild warfare, empire building, territory control, and emergent team tactics.',
 		path: '/gildenkrieg'
 	}}
 />
 
 <PageHeader
 	title="Gildenkrieg"
-	lede="A strategic multiplayer experience built around guild warfare, territory control, and emergent team tactics. This page uses placeholder content you can replace with real project details."
+	lede="A strategic MMO experience taking place across the universe built around guild warfare, empire building, territory control, and emergent team tactics."
 />
 
 <section class="mb-10 grid gap-6 md:grid-cols-3">
 	<article class="panel p-6">
-		<h2 class="text-text mb-2 text-lg font-semibold">Guild campaigns</h2>
+		<h2 class="text-text mb-2 text-lg font-semibold">Universal scale</h2>
 		<p class="text-text-muted text-sm">
-			Persistent world state where guilds claim territory, forge alliances, and compete across
-			seasons. Replace this with your actual campaign loop and progression systems.
+			A vast, procedurally generated persistent universe that continuously evolves and is seamlessly shared by
+			every player, creating a single, interconnected world shaped by exploration, conflict, discovery, and
+			player-driven events.
+		</p>
+	</article>
+	<article class="panel p-6">
+		<h2 class="text-text mb-2 text-lg font-semibold">Empire building</h2>
+		<p class="text-text-muted text-sm">
+			Players command every layer of their empire, from constructing advanced civilizations and automating
+			industrial production to mobilizing powerful military forces and forming guilds that shape the political
+			and economic landscape of the universe.
 		</p>
 	</article>
 	<article class="panel p-6">
 		<h2 class="text-text mb-2 text-lg font-semibold">Tactical combat</h2>
 		<p class="text-text-muted text-sm">
-			Combat designed for coordinated team play — roles, positioning, and timing matter. Add
-			screenshots, gameplay clips, or design notes here.
+			Dynamic, team-driven combat where roles, positioning, communication, and timing determine victory. Take
+			direct control from a first-person perspective or command entire fleets through an RTS-style strategic
+			interface; coordinating formations, objectives, and large-scale engagements across the battlefield.
+		</p>
+	</article>
+	<article class="panel p-6">
+		<h2 class="text-text mb-2 text-lg font-semibold">Universe exploration</h2>
+		<p class="text-text-muted text-sm">
+			Explore an immense, uncharted universe filled with procedurally generated planets, hidden resources,
+			ancient discoveries, and emerging frontiers. Chart new star systems, establish strategic outposts, and uncover opportunities that can reshape the future of your empire.
+		</p>
+	</article>
+	<article class="panel p-6">
+		<h2 class="text-text mb-2 text-lg font-semibold">Rogue enterprise</h2>
+		<p class="text-text-muted text-sm">
+			Forge your own path beyond the reach of guilds and empires. Operate as an independent trader, mercenary,
+			smuggler, bounty hunter, or pirate within a fully player-driven economy where supply, demand, risk, and
+			conflict determine the value of every resource, shipment, and opportunity.
 		</p>
 	</article>
 	<article class="panel p-6">
 		<h2 class="text-text mb-2 text-lg font-semibold">Live operations</h2>
 		<p class="text-text-muted text-sm">
-			Modular backend architecture to support matchmaking, analytics, and live content updates.
-			Document your stack and deployment approach when ready.
+			A continuously evolving online universe powered by scalable backend services, real-time telemetry,
+			automated deployment pipelines, and persistent world infrastructure. New content, balance updates, events,
+			and system improvements can be delivered seamlessly while keeping the universe active, stable, and
+			responsive around the clock.
 		</p>
 	</article>
 </section>

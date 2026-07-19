@@ -49,25 +49,34 @@
 			</p>
 			<h2 id="gildenkrieg-heading" class="text-text mb-3 text-2xl font-semibold">Gildenkrieg</h2>
 			<p class="text-text-muted mb-4 max-w-xl">
-				A strategic multiplayer experience built around guild warfare, territory control, and
-				emergent team tactics. This section is placeholder content — replace it with your latest
-				updates, screenshots, and launch details when ready.
+				A strategic MMO experience taking place across the universe built around guild warfare, empire building,
+				territory control, and emergent team tactics.
 			</p>
 			<ul class="text-text-muted mb-6 space-y-2 text-sm">
 				<li class="flex items-start gap-2">
 					<span class="bg-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true"
 					></span>
-					Guild-based campaigns with persistent world state
+					Universal scale: single shared procedurally generated persistent universe
 				</li>
 				<li class="flex items-start gap-2">
 					<span class="bg-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true"
 					></span>
-					Tactical combat systems designed for coordinated play
+					Empire building: command every layer of their empire
 				</li>
 				<li class="flex items-start gap-2">
 					<span class="bg-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true"
 					></span>
-					Modular backend architecture for live operations
+					Tactical combat: first-person or RTS-style team-driven fleet combat
+				</li>
+				<li class="flex items-start gap-2">
+					<span class="bg-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true"
+					></span>
+					Universe exploration: immense, uncharted universe with procedurally generated content
+				</li>
+				<li class="flex items-start gap-2">
+					<span class="bg-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true"
+					></span>
+					Rogue enterprise: operate as an independent individual in a player-driven economy
 				</li>
 			</ul>
 			<Button href="/gildenkrieg" variant="primary">Explore Gildenkrieg →</Button>
