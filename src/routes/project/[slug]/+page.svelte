@@ -7,6 +7,7 @@
 
 	let { data }: { data: PageData } = $props();
 	const project = $derived(data.project);
+	const demoEmbedSrc = $derived(project.demo_embed_src?.trim() || undefined);
 </script>
 
 <SeoHead
@@ -45,39 +46,33 @@
 		</ul>
 	</header>
 
-	<figure class="panel mb-8 overflow-hidden">
-		<img
-			src={data.image}
-			alt=""
-			width="960"
-			height="540"
-			loading="lazy"
-			class="w-full object-cover"
-		/>
-	</figure>
-
-	<ProseContent html={data.bodyHtml} />
-
-	{#if project.demo_embed_src}
-		<section class="panel mt-10 p-6" aria-labelledby="demo-heading">
-			<h2 id="demo-heading" class="text-text mb-2 text-xl font-semibold">Embedded demo</h2>
-			<p class="text-text-muted mb-4 text-sm">
-				External content shown in a restricted frame.
+	{#if demoEmbedSrc}
+		<section class="panel mb-8 overflow-hidden" aria-labelledby="demo-heading">
+			<div class="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+				<h2 id="demo-heading" class="text-text text-sm font-semibold">Live demo</h2>
 				{#if project.demo_url}
-					Prefer <a href={project.demo_url} target="_blank" rel="noopener noreferrer"
-						>opening the demo in a new tab</a
-					>.
+					<a
+						href={project.demo_url}
+	target="_blank"
+						rel="noopener noreferrer"
+						class="text-accent font-mono text-xs"
+					>
+						Open in new tab ↗
+					</a>
 				{/if}
-			</p>
-			<div class="border-border overflow-hidden rounded border">
-				<iframe
-					src={project.demo_embed_src}
-					title="Demo: {project.title}"
-					class="bg-bg-elevated aspect-video w-full"
-					loading="lazy"
-					sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-				></iframe>
 			</div>
+			<iframe
+				src={demoEmbedSrc}
+				title="Demo: {project.title}"
+				class="bg-bg-elevated aspect-video w-full"
+				loading="lazy"
+				referrerpolicy="strict-origin-when-cross-origin"
+				allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gamepad; gyroscope; web-share"
+				allowfullscreen
+				sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+			></iframe>
 		</section>
 	{/if}
+
+	<ProseContent html={data.bodyHtml} />
 </article>

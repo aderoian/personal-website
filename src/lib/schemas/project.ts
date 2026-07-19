@@ -13,12 +13,10 @@ const assetPathSchema = z
 	.refine((path) => path.startsWith('assets/'), 'Asset path must start with assets/')
 	.refine((path) => /^assets\/[a-zA-Z0-9._/-]+$/.test(path), 'Invalid asset path characters');
 
-const optionalUrlSchema = z
-	.string()
-	.trim()
-	.url()
-	.optional()
-	.or(z.literal('').transform(() => undefined));
+const optionalUrlSchema = z.preprocess((value) => {
+	if (value === '' || value === null || value === undefined) return undefined;
+	return value;
+}, z.string().trim().url().optional());
 
 export const projectSchema = z.object({
 	slug: slugSchema,

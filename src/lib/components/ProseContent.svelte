@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { EXTERNAL_LINK_REL, isExternalHref } from '$lib/links';
 
 	let {
 		html,
@@ -12,16 +13,32 @@
 	let root: HTMLElement | undefined = $state();
 
 	onMount(() => {
-		enhanceCodeBlocks();
+		enhanceContent();
 	});
 
 	$effect(() => {
-		// Re-run when html changes after mount.
 		void html;
 		if (root) {
-			queueMicrotask(() => enhanceCodeBlocks());
+			queueMicrotask(() => enhanceContent());
 		}
 	});
+
+	function enhanceContent() {
+		if (!root) return;
+		enhanceExternalLinks();
+		enhanceCodeBlocks();
+	}
+
+	function enhanceExternalLinks() {
+		if (!root) return;
+
+		for (const anchor of root.querySelectorAll('a[href]')) {
+			const href = anchor.getAttribute('href');
+			if (!isExternalHref(href)) continue;
+			anchor.setAttribute('target', '_blank');
+			anchor.setAttribute('rel', EXTERNAL_LINK_REL);
+		}
+	}
 
 	function enhanceCodeBlocks() {
 		if (!root) return;

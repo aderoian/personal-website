@@ -1,15 +1,92 @@
 [
 	{
-		"slug": "synthorcha",
-		"title": "Synthorcha",
-		"short_description": "C++ LLM agent and agentic orchestration framework built on llama.cpp.",
-		"summary": "A native C++ framework for building LLM-backed agents and multi-step orchestration workflows on top of llama.cpp, aimed at local and self-hosted inference.",
-		"body": "<p>Synthorcha targets developers who want agentic behavior close to the metal: orchestration, tooling, and model execution without leaving the C++ ecosystem when that fits your deployment model.</p><h3>Highlights</h3><ul><li>Built on <strong>llama.cpp</strong> for efficient local inference</li><li>Agent-focused architecture for scripted and autonomous flows</li><li>MIT-licensed</li></ul>",
+		"slug": "physics-engine",
+		"title": "Physics Engine",
+		"short_description": "Rigid body physics simulation in C.",
+		"summary": "A C project dedicated to simulating rigid bodies—complements the box-centric engine with a broader rigid-body focus.",
+		"body": "# Description\r\nA work-in-progress physics engine targeting deterministic rigidbody simulation for Gildenkrieg, designed to support large-scale, networked worlds with strict consistency between server and client.\r\n\r\nThe engine is built around a data-oriented architecture, leveraging Structure-of-Arrays (SoA) layouts and cache-friendly memory organization to efficiently simulate tens to hundreds of thousands of rigid bodies. It uses pooled memory, handle-based resource management (index + generation), and minimal allocation strategies to ensure predictable performance and avoid fragmentation under heavy load.\r\n\r\nDeterminism is a core design goal. All simulation steps are structured to produce identical results across platforms given the same inputs, enabling authoritative server simulation with client-side prediction and reconciliation. Floating-point behavior, update ordering, and constraint solving are carefully controlled to minimize divergence.\r\n\r\nThe simulation pipeline follows a structured update model:\r\n- Force accumulation and integration (semi-implicit Euler)\r\n- Broadphase collision detection (Sweep-and-Prune with axis optimization and support for sleeping/static bodies)\r\n- Narrowphase collision detection (AABB, sphere, and extensible convex support)\r\n- Contact generation and caching\r\n- Iterative constraint solving using sequential impulses with warm starting\r\n- Position correction and stabilization\r\n- Sleeping and island management for performance optimization\r\n\r\nThe engine includes a dynamic broadphase system optimized for large worlds, with support for incremental updates and efficient handling of both active and inactive bodies. Sleeping and island partitioning reduce unnecessary computation by grouping interacting bodies and disabling simulation for stable regions.\r\n\r\nCollision resolution is handled via a sequential impulse solver, supporting normal and friction constraints using a Coulomb friction model. Warm starting is used to improve convergence across frames, and the solver is designed to remain stable under stacking and high-contact scenarios.\r\n\r\nTo support scalability, the engine separates active, sleeping, and unused bodies into contiguous regions, enabling fast iteration and minimizing branch divergence. Future extensions include spatial partitioning structures (e.g., BVH or grid acceleration) and parallel solver stages.\r\n\r\nThe engine is designed to integrate tightly with Gildenkrieg’s server architecture:\r\n- Deterministic stepping aligned with the server tick loop\r\n- Clear separation between simulation and networking layers\r\n- Efficient state extraction for snapshotting and replication\r\n- Compatibility with rollback, replay, and debugging systems\r\n\r\nAdditional goals and planned features include:\r\n- Continuous collision detection (CCD) for fast-moving objects\r\n- Constraint types beyond contacts (joints, springs, motors)\r\n- Hybrid broadphase systems for planetary-scale environments\r\n- SIMD acceleration and potential GPU-assisted workflows\r\n- Tooling for debugging, visualization, and profiling\r\n\r\nThis engine prioritizes correctness, determinism, and scalability over general-purpose flexibility, making it well-suited for authoritative multiplayer simulations and large, procedurally generated worlds.",
+		"image": "assets/projects/riverrun.svg",
+		"featured_order": 0,
+		"year": 2026,
+		"tags": [
+			"C",
+			"Physics",
+			"Simulation",
+			"3D"
+		],
+		"published": true
+	},
+	{
+		"slug": "3d-game-engine",
+		"title": "3D Game Engine",
+		"short_description": "A custom-built 3D game engine and space-based gameplay system developed in C using Vulkan.",
+		"summary": "A custom-built 3D game engine and space-based gameplay system developed in C using Vulkan, focused on performance, modularity, and low-level control over rendering and simulation.",
+		"body": "A custom-built 3D game engine and space-based gameplay system developed in C using Vulkan, focused on performance, modularity, and low-level control over rendering and simulation.\r\n\r\nThe project combines engine development with a fully playable space game, serving as both a technical foundation and a testbed for advanced real-time systems. The engine is written entirely in C, emphasizing explicit memory management, data-oriented design, and minimal abstraction to achieve predictable performance and scalability.\r\n\r\nAt its core, the engine features a custom Vulkan-based rendering pipeline designed for modern GPU utilization. It includes mesh and model management systems optimized for efficient data transfer and rendering, along with a GLSL shader pipeline tailored for dynamic environments. Special attention is given to memory layout and access patterns to reduce overhead and maximize throughput on both CPU and GPU.\r\n\r\nAn entity system provides the backbone for managing in-game objects, supporting flexible composition and efficient updates across large numbers of entities. This is complemented by an integrated physics framework, enabling real-time simulation of movement, interactions, and collisions within a 3D space environment.\r\n\r\nOn top of the engine, the space game implements a wide range of gameplay systems and mechanics:\r\n- Quaternion-based rotation for smooth and gimbal-lock-free spaceship movement\r\n- Ray-cast–based weapon systems for accurate hit detection in 3D space\r\n- Inventory and resource management systems built using custom data structures\r\n- Real-time interaction systems for navigation, combat, and environment traversal\r\n\r\nA major feature of the project is its procedural planet generation system. Planets are generated using layered noise techniques, including Perlin and Blue Noise, to create varied and natural terrain distributions. These systems are integrated directly into the rendering pipeline, where GLSL shaders dynamically compute terrain coloring and visual detail in real time. The design prioritizes both visual fidelity and performance, enabling large-scale environments without excessive precomputation.\r\n\r\nThe project demonstrates a strong focus on:\r\n- Low-level systems programming in C\r\n- Vulkan-based rendering and GPU pipeline design\r\n- Data-oriented and memory-efficient architecture\r\n- Real-time procedural generation techniques\r\n- Integration of engine systems with gameplay features\r\n\r\nOverall, this project serves as both a fully functional game and a demonstration of advanced engine development principles, showcasing the ability to design and implement complex, high-performance systems from the ground up.",
 		"image": "",
 		"featured_order": 1,
+		"year": 2025,
+		"tags": [
+			"C",
+			"Vulkan",
+			"3D",
+			"Space"
+		],
+		"repo_url": "https://github.com/aderoian/IT466Project",
+		"published": true
+	},
+	{
+		"slug": "noise-playground",
+		"title": "Noise Playground",
+		"short_description": "A procedural noise editor and visualization tool.",
+		"summary": "A procedural noise editor and visualization tool designed to enable the creation, composition, and real-time exploration of complex terrain and parameter generation systems",
+		"body": "A procedural noise editor and visualization tool designed to enable the creation, composition, and real-time exploration of complex terrain and parameter generation systems for Gildenkrieg.\r\n\r\nThe Noise Playground is built around a node-based graph architecture inspired by systems like Unreal Engine Blueprints, allowing users to construct arbitrary procedural functions by combining noise generators, mathematical operations, and custom parameters. Each node represents a discrete operation (e.g., Perlin noise, domain warping, blending, or scalar transforms), and connections between nodes define the data flow that produces a final output value.\r\n\r\nAt its core, the system is designed for flexibility and extensibility. Users can define not only terrain heightmaps, but also arbitrary “maps” such as temperature, moisture, biome distribution, or any custom scalar field. These maps act as first-class inputs into higher-level systems like biome placement and world generation.\r\n\r\nThe editor is structured into multiple focused workflows:\r\n- **Biomes:** Define biome types, configure rules and thresholds based on input maps, and author biome-specific noise graphs\r\n- **Maps:** Create and manage reusable parameter maps (e.g., temperature, humidity, elevation) using graph-based definitions\r\n- **Placement:** Control how biomes are distributed across the world using map-driven rules, blending, and weighting systems\r\n- **Preview:** Visualize outputs in real-time using a chunked terrain renderer with support for multiple preview targets (heightmaps, individual maps, biome masks, etc.)\r\n\r\nThe rendering system is designed to support real-time feedback while editing:\r\n- Chunk-based terrain rendering with configurable radius\r\n- Level-of-detail (LOD) scaling for distant terrain\r\n- Multiple view modes (static “map view” and free-fly camera)\r\n- Dynamic switching between preview targets (e.g., right-click to preview a specific map or node output)\r\n\r\nTo support responsive editing, the system is being designed with GPU acceleration in mind. Noise evaluation and graph execution can be offloaded to the GPU where possible, enabling fast recomputation of large terrain regions and smooth interaction even with complex graphs.\r\n\r\nThe graph system itself supports:\r\n- Arbitrary chaining of noise functions and mathematical operators\r\n- Mixing of scalar values and procedural inputs\r\n- Parameter exposure for real-time tuning\r\n- Reusable subgraphs and modular composition (planned)\r\n- Deterministic evaluation for consistent world generation\r\n\r\nA key goal of the project is to bridge the gap between low-level procedural generation and high-level world design. Instead of hardcoding biome logic, users can define their own generation pipelines by combining maps and rules, enabling highly customizable and emergent terrain systems.\r\n\r\nPlanned features and future improvements include:\r\n- Full GPU-based graph execution pipeline\r\n- Advanced biome blending and transition systems\r\n- Spherical terrain support (cube-to-sphere mapping for planets)\r\n- Persistent graph assets and versioning\r\n- Debug visualization tools for inspecting intermediate outputs\r\n- Integration with physics and gameplay systems (e.g., collision mesh generation)\r\n- Collaborative editing and tooling\r\n\r\nThis project prioritizes usability, flexibility, and performance, aiming to provide a powerful procedural generation workflow that scales from simple noise experimentation to full planetary terrain generation systems.",
+		"image": "",
+		"featured_order": 2,
 		"year": 2026,
-		"tags": ["C++", "AI", "llama.cpp"],
-		"repo_url": "https://github.com/aderoian/synthorcha",
+		"tags": [
+			"Web",
+			"WebGL",
+			"OpenSimplex2",
+			"Procedural Generation"
+		],
+		"repo_url": "https://github.com/aderoian/noise-playground",
+		"demo_url": "https://noisy.armenderoian.dev",
+		"demo_embed_src": "https://noisy.armenderoian.dev",
+		"published": true
+	},
+	{
+		"slug": "2d-game-engine",
+		"title": "2D Game Engine",
+		"short_description": "A custom-built 2D game engine and multiplayer tower defense platform developed in C using SDL.",
+		"summary": "A custom-built 2D game engine and multiplayer tower defense platform developed in C using SDL, designed to support real-time networking, scalable gameplay systems, and multiple game modes within a unified architecture.",
+		"body": "A custom-built 2D game engine and multiplayer tower defense platform developed in C using SDL, designed to support real-time networking, scalable gameplay systems, and multiple game modes within a unified architecture.\r\n\r\nThe project combines low-level engine development with a feature-rich top-down tower defense game, serving as both a technical framework and a fully playable multiplayer experience. The engine is written with a focus on performance, simplicity, and control, utilizing explicit memory management and efficient data structures to ensure responsiveness in both singleplayer and networked environments.\r\n\r\nAt its core, the engine provides a modular 2D rendering pipeline built on SDL, supporting sprite batching, texture management, and efficient draw ordering. The entity system enables flexible composition of game objects, allowing towers, enemies, projectiles, and players to share common behaviors while remaining highly customizable. A lightweight physics and collision system supports real-time interactions, pathfinding, and combat mechanics.\r\n\r\nA major focus of the project is its multiplayer architecture, which is designed to support multiple gameplay styles with synchronized state and responsive interactions:\r\n- Real-time client-server model with deterministic updates\r\n- Efficient state replication and event-driven networking\r\n- Support for multiple players interacting in the same world simultaneously\r\n- Systems designed to minimize latency impact on gameplay\r\n\r\nThe game features several distinct modes, all built on top of the same engine and networking layer:\r\n\r\n### Solo (PvE):\r\nA traditional tower defense experience where players defend against waves of AI-controlled enemies. This mode emphasizes strategy, resource management, and optimization of tower placement.\r\n\r\n### Versus (PvP):\r\nA competitive multiplayer mode where players generate and send units to opponents while defending their own base. This introduces a strategic layer of timing, resource allocation, and counterplay, blending offensive and defensive mechanics in real time.\r\n\r\n### Open World (PvE Multiplayer):\r\nA cooperative mode where multiple players explore and defend within a shared persistent environment. Players can build, expand defenses, and respond dynamically to threats across a larger map, combining tower defense mechanics with open-ended gameplay.\r\n\r\nCore gameplay systems include:\r\n- Grid and pathfinding systems for enemy navigation\r\n- Tower placement and upgrade mechanics\r\n- Custom resource and inventory systems\r\n- Projectile and combat systems with collision handling\r\n- Wave management and scaling difficulty\r\n\r\nThe engine is designed for extensibility, allowing new tower types, enemy behaviors, and game modes to be added with minimal friction. Multiplayer systems are deeply integrated rather than layered on top, ensuring consistent behavior across all modes.\r\n\r\nKey focuses of the project include:\r\n- Real-time multiplayer system design in C\r\n- SDL-based rendering and engine architecture\r\n- Efficient entity and memory management\r\n- Modular gameplay systems supporting multiple modes\r\n- Synchronization of game state across networked clients\r\n\r\nOverall, this project demonstrates the design and implementation of a complete 2D engine with a strong emphasis on multiplayer gameplay, showcasing the ability to build scalable, networked systems alongside engaging game mechanics.",
+		"image": "",
+		"featured_order": 3,
+		"year": 2026,
+		"tags": [
+			"C",
+			"SDL",
+			"2D",
+			"Tower-Defense"
+		],
+		"repo_url": "https://github.com/aderoian/IT366-Project",
+		"published": true
+	},
+	{
+		"slug": "network-library",
+		"title": "Network Library",
+		"short_description": "A custom-built, cross-platform networking library written in C.",
+		"summary": "A custom-built, cross-platform networking library written in C, designed to provide high-performance, low-latency communication for real-time applications and systems.",
+		"body": "A custom-built, cross-platform networking library written in C, designed to provide high-performance, low-latency communication for real-time applications and systems.\r\n\r\nThe library is implemented entirely from scratch, supporting both TCP and UDP protocols with a unified and extensible API. It is built to give developers fine-grained control over connection handling, packet flow, and network behavior, while maintaining portability across major platforms including Windows and Linux.\r\n\r\nAt its core, the library features a multi-threaded, event-driven architecture designed to scale efficiently under high concurrency. A dedicated network host layer manages socket lifecycle and I/O multiplexing, while worker threads process events, handle packet serialization/deserialization, and manage client state. This separation of concerns allows the system to maximize throughput while minimizing contention between threads.\r\n\r\nTo support efficient inter-thread communication, the library utilizes lock-free and thread-safe data structures:\r\n- Concurrent queues for passing packets and events between threads\r\n- Ring buffers for high-throughput, low-overhead data streaming\r\n- Carefully designed memory layouts to reduce cache misses and contention\r\n\r\nThe networking model is built around custom packet handling, enabling flexible message formats and efficient serialization strategies. Packets are processed in a structured pipeline, allowing applications to define their own protocols while benefiting from optimized transport and buffering layers.\r\n\r\nConnection management is a core component of the library, supporting:\r\n- Dynamic client connection and disconnection handling\r\n- Session-based abstractions for managing state\r\n- Efficient tracking of active and inactive peers\r\n- Robust handling of network errors and edge cases\r\n\r\nThe library is designed with performance as a primary goal. Data structures and algorithms are optimized to handle large numbers of concurrent connections while maintaining low latency. Non-blocking I/O, minimal memory allocations, and careful synchronization strategies ensure consistent performance across different workloads and platforms.\r\n\r\nKey features and design focuses include:\r\n- Cross-platform support for Windows and Linux\r\n- TCP and UDP communication with a unified interface\r\n- Event-driven, multi-threaded architecture\r\n- Lock-free and thread-safe data structures\r\n- Custom packet serialization and handling\r\n- Scalable connection and session management\r\n- Low-latency, high-throughput communication\r\n\r\nThis networking library is well-suited for real-time systems such as multiplayer game servers, distributed simulations, and high-performance backend services. It demonstrates a deep understanding of systems programming, concurrency, and network architecture, with an emphasis on building reliable and efficient communication layers from the ground up.",
+		"image": "",
+		"featured_order": 4,
+		"year": 2026,
+		"tags": [
+			"C",
+			"Networking",
+			"TCP",
+			"UDP"
+		],
 		"published": true
 	},
 	{
@@ -17,11 +94,15 @@
 		"title": "Box physics",
 		"short_description": "Educational square-based 3D physics engine in C.",
 		"summary": "A compact C engine focused on box primitives—useful for learning collision response, integration, and 3D simulation basics without a full game engine.",
-		"body": "<p>The emphasis is clarity over feature bloat: rigid boxes, predictable numerics, and room to extend with joints or more shapes later.</p><h3>Stack</h3><ul><li>C</li><li>3D math and collision</li><li>Teaching-oriented structure</li></ul>",
-		"image": "assets/projects/taskflow.svg",
-		"featured_order": 2,
+		"body": "A lightweight 3D physics engine developed in C as a learning-focused project, centered around simulating rigid body interactions using axis-aligned bounding boxes (AABBs) and simple, optimized collision handling techniques.\r\n\r\nThe engine was designed to explore the fundamentals of physics simulation from the ground up, including collision detection, response, and integration, while keeping the scope intentionally constrained to box-based primitives. By limiting the problem space, the project emphasizes clarity of implementation and performance-conscious design rather than feature completeness.\r\n\r\nAt its core, the engine implements a basic simulation pipeline:\r\n\r\nPosition and velocity integration\r\nBroadphase collision checks using AABB overlap tests\r\nNarrowphase resolution for box-to-box collisions\r\nImpulse-based collision response with simple positional correction\r\n\r\nTo improve performance, the engine incorporates straightforward optimizations such as spatial locality awareness, early-out collision checks, and minimal data structures to reduce overhead. These optimizations allow the system to handle multiple interacting bodies efficiently while maintaining readable and maintainable code.\r\n\r\nThe project also explores key concepts in physics engine design:\r\n- Separation of detection and resolution phases\r\n- Tradeoffs between accuracy and performance\r\n- Stability considerations in discrete simulations\r\n- Data-oriented approaches for small-scale systems\r\n\r\nWhile intentionally limited in scope, the engine serves as a foundational step toward more advanced systems, providing insight into how larger physics engines are structured and optimized. It demonstrates an understanding of core simulation principles and the ability to implement them cleanly and efficiently in a low-level programming environment.",
+		"image": "",
+		"featured_order": 5,
 		"year": 2026,
-		"tags": ["C", "Physics", "3D"],
+		"tags": [
+			"C",
+			"Physics",
+			"3D"
+		],
 		"repo_url": "https://github.com/aderoian/box-physics",
 		"published": true
 	},
@@ -32,23 +113,31 @@
 		"summary": "A native C++ take on Minecraft server technology—performance and control goals typical of custom server implementations.",
 		"body": "<p>Stratos is explicitly marked as WIP; the repository tracks protocol handling, world simulation, and server architecture experiments in C++.</p><h3>Why it’s interesting</h3><ul><li>Server-side C++ instead of the usual JVM stack</li><li>Room to optimize hot paths for large player counts</li></ul>",
 		"image": "assets/projects/bytepack.svg",
-		"featured_order": 3,
+		"featured_order": 6,
 		"year": 2025,
-		"tags": ["C++", "Minecraft", "Server"],
+		"tags": [
+			"C++",
+			"Minecraft",
+			"Server"
+		],
 		"repo_url": "https://github.com/aderoian/Stratos",
 		"published": true
 	},
 	{
-		"slug": "physics-engine",
-		"title": "Physics engine",
-		"short_description": "Rigid body physics simulation in C.",
-		"summary": "A C project dedicated to simulating rigid bodies—complements the box-centric engine with a broader rigid-body focus.",
-		"body": "<p>Useful as a reference for integrators, constraint ideas, and stable stacking. Pairs well with graphics or game prototypes that need deterministic physics cores.</p><h3>Highlights</h3><ul><li>Rigid body dynamics</li><li>C for portability and embedding</li></ul>",
-		"image": "assets/projects/riverrun.svg",
-		"featured_order": 4,
-		"year": 2025,
-		"tags": ["C", "Physics", "Simulation"],
-		"repo_url": "https://github.com/aderoian/physics-engine",
+		"slug": "synthorcha",
+		"title": "Synthorcha",
+		"short_description": "C++ LLM agent and agentic orchestration framework built on llama.cpp.",
+		"summary": "A native C++ framework for building LLM-backed agents and multi-step orchestration workflows on top of llama.cpp, aimed at local and self-hosted inference.",
+		"body": "Synthorcha is a lightweight, C++-native framework for building and running agentic systems close to the metal. It is designed for developers who want full control over orchestration, tooling, and model execution without relying on heavyweight runtimes or leaving the C++ ecosystem.\r\n\r\nBuilt on top of high-performance local inference engines such as llama.cpp, Synthorcha enables efficient on-device model execution while exposing a flexible architecture for constructing both scripted and autonomous agent workflows. The framework emphasizes minimal abstraction, predictable performance, and tight integration with existing native systems.\r\n\r\nSynthorcha is structured around an agent-first design, where execution flows are composed of modular components that can interact with tools, external systems, and models in a controlled and extensible manner. This makes it suitable for applications ranging from embedded AI systems to game engines and custom backend services.",
+		"image": "",
+		"featured_order": 7,
+		"year": 2026,
+		"tags": [
+			"C++",
+			"AI",
+			"llama.cpp"
+		],
+		"repo_url": "https://github.com/aderoian/synthorcha",
 		"published": true
 	},
 	{
@@ -58,23 +147,14 @@
 		"summary": "A TypeScript project for spinning up a small, readable wiki from Markdown content—minimal ceremony compared to full CMS stacks.",
 		"body": "<p>Authors stay in Git-friendly Markdown while readers get a simple wiki experience. Good fit for documentation sites or personal knowledge bases that do not need a database-heavy CMS.</p><h3>Highlights</h3><ul><li>Markdown-first content</li><li>TypeScript implementation</li><li>Easy to adapt for static or semi-static hosting</li></ul>",
 		"image": "assets/projects/riverrun.svg",
-		"featured_order": 5,
+		"featured_order": 8,
 		"year": 2024,
-		"tags": ["TypeScript", "Markdown", "Wiki"],
+		"tags": [
+			"TypeScript",
+			"Markdown",
+			"Wiki"
+		],
 		"repo_url": "https://github.com/aderoian/SimpleWiki",
-		"published": true
-	},
-	{
-		"slug": "brain-stone",
-		"title": "BrainStone",
-		"short_description": "Minecraft mod extending base security capabilities.",
-		"summary": "A Java Minecraft mod that adds defensive and security-themed mechanics so bases feel harder to breach without resorting to pure admin rules.",
-		"body": "<p>BrainStone explores survival-friendly security: blocks, items, or systems that reward planning and reduce casual griefing while staying in vanilla-adjacent balance.</p>",
-		"image": "assets/projects/bytepack.svg",
-		"featured_order": 6,
-		"year": 2023,
-		"tags": ["Java", "Minecraft", "Security"],
-		"repo_url": "https://github.com/aderoian/BrainStone",
 		"published": true
 	},
 	{
@@ -84,10 +164,31 @@
 		"summary": "Java tooling that ties together in-game behavior, a REST API, and scripts so modpacks can be refreshed without fully manual installs.",
 		"body": "<p>ModpackUpdater is aimed at servers or communities that iterate on curated packs often. The API and script layer automate checks and apply updates in a controlled way.</p><h3>Components</h3><ul><li>Minecraft mod integration</li><li>REST API for update metadata</li><li>Update script for pack maintenance</li></ul>",
 		"image": "assets/projects/lumina.svg",
-		"featured_order": 7,
+		"featured_order": 9,
 		"year": 2025,
-		"tags": ["Java", "Minecraft", "REST API"],
+		"tags": [
+			"Java",
+			"Minecraft",
+			"REST API"
+		],
 		"repo_url": "https://github.com/aderoian/ModpackUpdater",
+		"published": true
+	},
+	{
+		"slug": "brain-stone",
+		"title": "BrainStone",
+		"short_description": "Minecraft mod extending base security capabilities.",
+		"summary": "A Java Minecraft mod that adds defensive and security-themed mechanics so bases feel harder to breach without resorting to pure admin rules.",
+		"body": "<p>BrainStone explores survival-friendly security: blocks, items, or systems that reward planning and reduce casual griefing while staying in vanilla-adjacent balance.</p>",
+		"image": "assets/projects/bytepack.svg",
+		"featured_order": 10,
+		"year": 2023,
+		"tags": [
+			"Java",
+			"Minecraft",
+			"Security"
+		],
+		"repo_url": "https://github.com/aderoian/BrainStone",
 		"published": true
 	}
 ]

@@ -40,7 +40,8 @@ describe('content loaders (repository data)', () => {
 	it('returns featured projects in order', () => {
 		const featured = getFeaturedProjects(3);
 		expect(featured).toHaveLength(3);
-		expect(featured[0]?.slug).toBe('synthorcha');
+		expect(featured[0]?.featured_order).toBeLessThanOrEqual(featured[1]?.featured_order ?? Infinity);
+		expect(featured[1]?.featured_order).toBeLessThanOrEqual(featured[2]?.featured_order ?? Infinity);
 	});
 
 	it('finds a project by slug', () => {

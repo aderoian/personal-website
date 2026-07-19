@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { EXTERNAL_LINK_REL, isExternalHref } from '$lib/links';
 
 	let {
 		href,
@@ -12,10 +13,17 @@
 		class?: string;
 		children: Snippet;
 	} = $props();
+
+	const external = $derived(isExternalHref(href));
 </script>
 
 {#if href}
-	<a {href} class="{variant === 'primary' ? 'btn-primary' : 'btn'} {className}">
+	<a
+		{href}
+		class="{variant === 'primary' ? 'btn-primary' : 'btn'} {className}"
+		target={external ? '_blank' : undefined}
+		rel={external ? EXTERNAL_LINK_REL : undefined}
+	>
 		{@render children()}
 	</a>
 {:else}

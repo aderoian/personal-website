@@ -1,7 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { renderMarkdown } from '$lib/markdown';
 import { getProjectBySlug } from '$lib/server/content/projects';
-import { projectEffectiveImage, toAssetUrl } from '$lib/schemas/project';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -13,7 +12,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		project,
-		bodyHtml: renderMarkdown(project.body),
-		image: toAssetUrl(projectEffectiveImage(project))
+		bodyHtml: renderMarkdown(project.body)
 	};
 };

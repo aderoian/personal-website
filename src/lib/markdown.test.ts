@@ -48,6 +48,15 @@ describe('markdown rendering', () => {
 		expect(html).not.toContain('<script>alert');
 	});
 
+	it('opens external markdown links in a new tab', () => {
+		const html = renderMarkdown('[repo](https://github.com/example/repo) and [home](/)');
+		expect(html).toContain('href="https://github.com/example/repo"');
+		expect(html).toContain('target="_blank"');
+		expect(html).toContain('rel="noopener noreferrer"');
+		expect(html).toMatch(/href="\/"[^>]*>home/);
+		expect(html).not.toMatch(/href="\/"[^>]*target="_blank"/);
+	});
+
 	it('rejects oversized preview input', () => {
 		const result = renderMarkdownPreview('x'.repeat(MAX_PREVIEW_CHARS + 1));
 		expect(result.ok).toBe(false);

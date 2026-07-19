@@ -1,3 +1,4 @@
+import { EXTERNAL_LINK_REL, isExternalHref } from '$lib/links';
 import DOMPurify from 'isomorphic-dompurify';
 import hljs from 'highlight.js/lib/core';
 import bash from 'highlight.js/lib/languages/bash';
@@ -95,6 +96,15 @@ function renderFencedCode(token: Tokens.Code): string {
 const renderer = new marked.Renderer();
 renderer.code = ({ text, lang }: Tokens.Code) =>
 	renderFencedCode({ type: 'code', raw: '', text, lang });
+renderer.link = function ({ href, title, tokens }: Tokens.Link): string {
+	const text = this.parser.parseInline(tokens);
+	const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
+	const safeHref = escapeHtml(href);
+	if (isExternalHref(href)) {
+		return `<a href="${safeHref}"${titleAttr} target="_blank" rel="${EXTERNAL_LINK_REL}">${text}</a>`;
+	}
+	return `<a href="${safeHref}"${titleAttr}>${text}</a>`;
+};
 
 marked.use({ renderer });
 
@@ -104,7 +114,7 @@ export function renderMarkdown(source: string): string {
 	const html = marked.parse(source, { async: false }) as string;
 	return DOMPurify.sanitize(html, {
 		USE_PROFILES: { html: true },
-		ADD_ATTR: ['data-language', 'class']
+		ADD_ATTR: ['data-language', 'class', 'target', 'rel']
 	});
 }
 
