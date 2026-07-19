@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
 
@@ -26,22 +27,27 @@
 			<p class="text-accent font-mono text-xs tracking-wide uppercase">Admin</p>
 			<h1 class="text-text text-2xl font-semibold">Content management</h1>
 		</div>
-		{#if data.adminAuthenticated}
-			<nav class="flex flex-wrap items-center gap-2" aria-label="Admin">
-				{#each links as link (link.href)}
-					<a
-						href={link.href}
-						class="btn px-3 py-1.5 text-sm {isActive(link.href) ? 'border-accent text-accent' : ''}"
-						aria-current={isActive(link.href) ? 'page' : undefined}
-					>
-						{link.label}
-					</a>
-				{/each}
-				<form method="POST" action="/admin?/logout">
-					<button type="submit" class="btn px-3 py-1.5 text-sm">Log out</button>
-				</form>
-			</nav>
-		{/if}
+		<div class="flex flex-wrap items-center gap-2">
+			<ThemeToggle />
+			{#if data.adminAuthenticated}
+				<nav class="flex flex-wrap items-center gap-2" aria-label="Admin">
+					{#each links as link (link.href)}
+						<a
+							href={link.href}
+							class="btn px-3 py-1.5 text-sm {isActive(link.href)
+								? 'border-accent text-accent'
+								: ''}"
+							aria-current={isActive(link.href) ? 'page' : undefined}
+						>
+							{link.label}
+						</a>
+					{/each}
+					<form method="POST" action="/admin?/logout">
+						<button type="submit" class="btn px-3 py-1.5 text-sm">Log out</button>
+					</form>
+				</nav>
+			{/if}
+		</div>
 	</header>
 
 	{@render children()}

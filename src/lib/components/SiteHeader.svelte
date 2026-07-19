@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { navItems, site } from '$lib/config';
 
 	let mobileOpen = $state(false);
@@ -27,47 +28,51 @@
 			<span class="font-semibold tracking-tight">{site.name}</span>
 		</a>
 
-		<nav class="hidden md:block" aria-label="Main">
-			<ul class="flex items-center gap-1">
-				{#each navItems as item (item.id)}
-					<li>
-						<a
-							href={item.href}
-							class="rounded px-3 py-2 text-sm transition-colors {isActive(item.href)
-								? 'bg-accent/10 text-accent'
-								: 'text-text-muted hover:text-text'}"
-							aria-current={isActive(item.href) ? 'page' : undefined}
-						>
-							{item.label}
-						</a>
-					</li>
-				{/each}
-			</ul>
-		</nav>
+		<div class="flex items-center gap-2">
+			<nav class="hidden md:block" aria-label="Main">
+				<ul class="flex items-center gap-1">
+					{#each navItems as item (item.id)}
+						<li>
+							<a
+								href={item.href}
+								class="rounded px-3 py-2 text-sm transition-colors {isActive(item.href)
+									? 'bg-accent/10 text-accent'
+									: 'text-text-muted hover:text-text'}"
+								aria-current={isActive(item.href) ? 'page' : undefined}
+							>
+								{item.label}
+							</a>
+						</li>
+					{/each}
+				</ul>
+			</nav>
 
-		<button
-			type="button"
-			class="btn px-3 py-2 md:hidden"
-			aria-expanded={mobileOpen}
-			aria-controls="mobile-nav"
-			onclick={() => (mobileOpen = !mobileOpen)}
-		>
-			<span class="sr-only">Toggle menu</span>
-			<svg
-				width="20"
-				height="20"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				aria-hidden="true"
+			<ThemeToggle />
+
+			<button
+				type="button"
+				class="btn px-3 py-2 md:hidden"
+				aria-expanded={mobileOpen}
+				aria-controls="mobile-nav"
+				onclick={() => (mobileOpen = !mobileOpen)}
 			>
-				{#if mobileOpen}
-					<path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" />
-				{:else}
-					<path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" />
-				{/if}
-			</svg>
-		</button>
+				<span class="sr-only">Toggle menu</span>
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					aria-hidden="true"
+				>
+					{#if mobileOpen}
+						<path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" />
+					{:else}
+						<path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" />
+					{/if}
+				</svg>
+			</button>
+		</div>
 	</div>
 
 	{#if mobileOpen}

@@ -8,11 +8,7 @@
 		"image": "",
 		"featured_order": 1,
 		"year": 2026,
-		"tags": [
-			"C++",
-			"AI",
-			"llama.cpp"
-		],
+		"tags": ["C++", "AI", "llama.cpp"],
 		"repo_url": "https://github.com/aderoian/synthorcha",
 		"published": true
 	},
@@ -25,11 +21,7 @@
 		"image": "assets/projects/taskflow.svg",
 		"featured_order": 2,
 		"year": 2026,
-		"tags": [
-			"C",
-			"Physics",
-			"3D"
-		],
+		"tags": ["C", "Physics", "3D"],
 		"repo_url": "https://github.com/aderoian/box-physics",
 		"published": true
 	},
@@ -42,11 +34,7 @@
 		"image": "assets/projects/bytepack.svg",
 		"featured_order": 3,
 		"year": 2025,
-		"tags": [
-			"C++",
-			"Minecraft",
-			"Server"
-		],
+		"tags": ["C++", "Minecraft", "Server"],
 		"repo_url": "https://github.com/aderoian/Stratos",
 		"published": true
 	},
@@ -59,11 +47,7 @@
 		"image": "assets/projects/riverrun.svg",
 		"featured_order": 4,
 		"year": 2025,
-		"tags": [
-			"C",
-			"Physics",
-			"Simulation"
-		],
+		"tags": ["C", "Physics", "Simulation"],
 		"repo_url": "https://github.com/aderoian/physics-engine",
 		"published": true
 	},
@@ -76,11 +60,7 @@
 		"image": "assets/projects/riverrun.svg",
 		"featured_order": 5,
 		"year": 2024,
-		"tags": [
-			"TypeScript",
-			"Markdown",
-			"Wiki"
-		],
+		"tags": ["TypeScript", "Markdown", "Wiki"],
 		"repo_url": "https://github.com/aderoian/SimpleWiki",
 		"published": true
 	},
@@ -93,11 +73,7 @@
 		"image": "assets/projects/bytepack.svg",
 		"featured_order": 6,
 		"year": 2023,
-		"tags": [
-			"Java",
-			"Minecraft",
-			"Security"
-		],
+		"tags": ["Java", "Minecraft", "Security"],
 		"repo_url": "https://github.com/aderoian/BrainStone",
 		"published": true
 	},
@@ -110,11 +86,7 @@
 		"image": "assets/projects/lumina.svg",
 		"featured_order": 7,
 		"year": 2025,
-		"tags": [
-			"Java",
-			"Minecraft",
-			"REST API"
-		],
+		"tags": ["Java", "Minecraft", "REST API"],
 		"repo_url": "https://github.com/aderoian/ModpackUpdater",
 		"published": true
 	}

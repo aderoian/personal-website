@@ -4,19 +4,74 @@
 	--font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-	--color-bg: #070b14;
-	--color-bg-elevated: #0d1424;
-	--color-bg-panel: #111827;
-	--color-border: #1e3a5f;
-	--color-border-glow: #22d3ee33;
-	--color-text: #e2e8f0;
-	--color-text-muted: #94a3b8;
-	--color-accent: #22d3ee;
-	--color-accent-secondary: #a78bfa;
-	--color-accent-dim: #0891b2;
+	--color-bg: var(--theme-bg);
+	--color-bg-elevated: var(--theme-bg-elevated);
+	--color-bg-panel: var(--theme-bg-panel);
+	--color-border: var(--theme-border);
+	--color-border-glow: var(--theme-border-glow);
+	--color-text: var(--theme-text);
+	--color-text-muted: var(--theme-text-muted);
+	--color-accent: var(--theme-accent);
+	--color-accent-secondary: var(--theme-accent-secondary);
+	--color-accent-dim: var(--theme-accent-dim);
 
-	--shadow-glow: 0 0 24px #22d3ee22;
-	--shadow-panel: 0 8px 32px #00000066;
+	--shadow-glow: var(--theme-shadow-glow);
+	--shadow-panel: var(--theme-shadow-panel);
+}
+
+:root,
+html[data-theme='dark'] {
+	--theme-bg: #070b14;
+	--theme-bg-elevated: #0d1424;
+	--theme-bg-panel: #111827;
+	--theme-border: #1e3a5f;
+	--theme-border-glow: #22d3ee33;
+	--theme-text: #e2e8f0;
+	--theme-text-muted: #94a3b8;
+	--theme-accent: #22d3ee;
+	--theme-accent-secondary: #a78bfa;
+	--theme-accent-dim: #0891b2;
+	--theme-shadow-glow: 0 0 24px #22d3ee22;
+	--theme-shadow-panel: 0 8px 32px #00000066;
+	--theme-grid: #22d3ee14;
+	--theme-glow-a: #a78bfa18;
+	--theme-glow-b: #22d3ee12;
+	--theme-panel-inset: #ffffff08;
+	--theme-link-hover: #ffffff;
+	--theme-selection-fg: #ffffff;
+	--theme-code-keyword: #22d3ee;
+	--theme-code-literal: #a78bfa;
+	--theme-code-title: #e2e8f0;
+	--theme-code-attr: #67e8f9;
+	--theme-code-symbol: #fbbf24;
+	--theme-code-builtin: #f472b6;
+}
+
+html[data-theme='light'] {
+	--theme-bg: #f1f5f9;
+	--theme-bg-elevated: #ffffff;
+	--theme-bg-panel: #e8eef5;
+	--theme-border: #cbd5e1;
+	--theme-border-glow: #0891b233;
+	--theme-text: #0f172a;
+	--theme-text-muted: #475569;
+	--theme-accent: #0e7490;
+	--theme-accent-secondary: #6d28d9;
+	--theme-accent-dim: #155e75;
+	--theme-shadow-glow: 0 0 24px #0891b222;
+	--theme-shadow-panel: 0 8px 28px #0f172a14;
+	--theme-grid: #0e749014;
+	--theme-glow-a: #6d28d912;
+	--theme-glow-b: #0e74900e;
+	--theme-panel-inset: #ffffffcc;
+	--theme-link-hover: #0f172a;
+	--theme-selection-fg: #ffffff;
+	--theme-code-keyword: #0e7490;
+	--theme-code-literal: #6d28d9;
+	--theme-code-title: #0f172a;
+	--theme-code-attr: #155e75;
+	--theme-code-symbol: #b45309;
+	--theme-code-builtin: #be185d;
 }
 
 @layer base {
@@ -27,10 +82,10 @@
 	body {
 		@apply bg-bg text-text min-h-screen font-sans antialiased;
 		background-image:
-			linear-gradient(#22d3ee08 1px, transparent 1px),
-			linear-gradient(90deg, #22d3ee08 1px, transparent 1px),
-			radial-gradient(ellipse at 20% 0%, #a78bfa12 0%, transparent 50%),
-			radial-gradient(ellipse at 80% 100%, #22d3ee0a 0%, transparent 50%);
+			linear-gradient(var(--theme-grid) 1px, transparent 1px),
+			linear-gradient(90deg, var(--theme-grid) 1px, transparent 1px),
+			radial-gradient(ellipse at 20% 0%, var(--theme-glow-a) 0%, transparent 50%),
+			radial-gradient(ellipse at 80% 100%, var(--theme-glow-b) 0%, transparent 50%);
 		background-size:
 			48px 48px,
 			48px 48px,
@@ -39,11 +94,16 @@
 	}
 
 	::selection {
-		@apply bg-accent/30 text-white;
+		@apply bg-accent/30;
+		color: var(--theme-selection-fg);
 	}
 
 	a {
-		@apply text-accent transition-colors duration-200 hover:text-white;
+		@apply text-accent transition-colors duration-200;
+	}
+
+	a:hover {
+		color: var(--theme-link-hover);
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -66,7 +126,7 @@
 		@apply border-border bg-bg-panel/80 shadow-panel rounded-lg border backdrop-blur-sm;
 		box-shadow:
 			var(--shadow-panel),
-			inset 0 1px 0 #ffffff08;
+			inset 0 1px 0 var(--theme-panel-inset);
 	}
 
 	.panel-glow {
@@ -74,7 +134,7 @@
 		box-shadow:
 			var(--shadow-glow),
 			var(--shadow-panel),
-			inset 0 1px 0 #ffffff08;
+			inset 0 1px 0 var(--theme-panel-inset);
 	}
 
 	.chip {
@@ -86,7 +146,11 @@
 	}
 
 	.btn-primary {
-		@apply border-accent/50 bg-accent/10 text-accent hover:border-accent hover:bg-accent/20 focus-visible:ring-accent inline-flex items-center justify-center gap-2 rounded border px-4 py-2 text-sm font-medium transition-all duration-200 hover:text-white focus-visible:ring-2 focus-visible:outline-none;
+		@apply border-accent/50 bg-accent/10 text-accent hover:border-accent hover:bg-accent/20 focus-visible:ring-accent inline-flex items-center justify-center gap-2 rounded border px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none;
+	}
+
+	.btn-primary:hover {
+		color: var(--theme-link-hover);
 	}
 
 	.prose-content {
@@ -161,14 +225,17 @@
 	}
 
 	.code-block-copy.is-error {
-		@apply border-red-500/50 text-red-300;
+		@apply border-red-500/50 text-red-700;
+	}
+
+	html[data-theme='dark'] .code-block-copy.is-error {
+		@apply text-red-300;
 	}
 
 	.code-block-status {
 		@apply sr-only;
 	}
 
-	/* highlight.js token colors tuned to the site palette */
 	.hljs-comment,
 	.hljs-quote {
 		@apply text-text-muted italic;
@@ -177,7 +244,7 @@
 	.hljs-keyword,
 	.hljs-selector-tag,
 	.hljs-addition {
-		color: #22d3ee;
+		color: var(--theme-code-keyword);
 	}
 
 	.hljs-number,
@@ -186,7 +253,7 @@
 	.hljs-literal,
 	.hljs-doctag,
 	.hljs-regexp {
-		color: #a78bfa;
+		color: var(--theme-code-literal);
 	}
 
 	.hljs-title,
@@ -194,7 +261,7 @@
 	.hljs-name,
 	.hljs-selector-id,
 	.hljs-selector-class {
-		color: #e2e8f0;
+		color: var(--theme-code-title);
 	}
 
 	.hljs-attribute,
@@ -203,20 +270,20 @@
 	.hljs-template-variable,
 	.hljs-class .hljs-title,
 	.hljs-type {
-		color: #67e8f9;
+		color: var(--theme-code-attr);
 	}
 
 	.hljs-symbol,
 	.hljs-bullet,
 	.hljs-link {
-		color: #fbbf24;
+		color: var(--theme-code-symbol);
 	}
 
 	.hljs-built_in,
 	.hljs-builtin-name,
 	.hljs-meta,
 	.hljs-deletion {
-		color: #f472b6;
+		color: var(--theme-code-builtin);
 	}
 
 	.hljs-emphasis {
@@ -240,7 +307,11 @@
 	}
 
 	.admin-field-error {
-		@apply mt-1 text-sm text-red-300;
+		@apply mt-1 text-sm text-red-700;
+	}
+
+	html[data-theme='dark'] .admin-field-error {
+		@apply text-red-300;
 	}
 
 	.admin-editor {
@@ -258,10 +329,10 @@
 	.admin-shell {
 		@apply bg-bg min-h-screen;
 		background-image:
-			linear-gradient(#22d3ee08 1px, transparent 1px),
-			linear-gradient(90deg, #22d3ee08 1px, transparent 1px),
-			radial-gradient(ellipse at 20% 0%, #a78bfa12 0%, transparent 50%),
-			radial-gradient(ellipse at 80% 100%, #22d3ee0a 0%, transparent 50%);
+			linear-gradient(var(--theme-grid) 1px, transparent 1px),
+			linear-gradient(90deg, var(--theme-grid) 1px, transparent 1px),
+			radial-gradient(ellipse at 20% 0%, var(--theme-glow-a) 0%, transparent 50%),
+			radial-gradient(ellipse at 80% 100%, var(--theme-glow-b) 0%, transparent 50%);
 		background-size:
 			48px 48px,
 			48px 48px,

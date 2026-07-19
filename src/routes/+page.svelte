@@ -38,7 +38,7 @@
 			<a href="/contact">contact</a>.
 		</p>
 	</div>
-	<ProfileAvatar size={200} />
+	<ProfileAvatar />
 </section>
 
 <section class="panel-glow mb-16 overflow-hidden p-6 md:p-8" aria-labelledby="gildenkrieg-heading">

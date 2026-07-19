@@ -3,6 +3,26 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			(function () {
+				try {
+					var stored = localStorage.getItem('theme');
+					var preference =
+						stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+					var resolved =
+						preference === 'system'
+							? window.matchMedia('(prefers-color-scheme: light)').matches
+								? 'light'
+								: 'dark'
+							: preference;
+					document.documentElement.dataset.theme = resolved;
+					document.documentElement.style.colorScheme = resolved;
+				} catch (e) {
+					document.documentElement.dataset.theme = 'dark';
+					document.documentElement.style.colorScheme = 'dark';
+				}
+			})();
+		</script>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link

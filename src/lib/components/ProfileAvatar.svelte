@@ -1,26 +1,24 @@
 <script lang="ts">
 	import { site } from '$lib/config';
 
-	let { size = 256 }: { size?: number } = $props();
+	let {
+		class: className = ''
+	}: {
+		class?: string;
+	} = $props();
 </script>
 
 <div
-	class="border-accent/30 bg-bg-elevated shadow-glow relative flex shrink-0 items-center justify-center overflow-hidden rounded-lg border"
-	style:width="{size}px"
-	style:height="{size}px"
-	role="img"
-	aria-label={site.name}
+	class="border-accent/30 bg-bg-elevated shadow-glow relative mx-auto aspect-square w-44 shrink-0 overflow-hidden rounded-lg border sm:w-56 md:mx-0 md:w-72 lg:w-80 {className}"
 >
-	<div
-		class="absolute inset-0 opacity-30"
-		style="background: radial-gradient(circle at 30% 30%, #22d3ee44, transparent 60%), radial-gradient(circle at 70% 70%, #a78bfa33, transparent 60%);"
-	></div>
-	<span
-		class="text-accent relative font-mono text-4xl font-medium tracking-wider"
-		style:font-size="{size * 0.22}px"
-	>
-		AD
-	</span>
+	<img
+		src={site.profileImage}
+		alt={site.name}
+		width="320"
+		height="320"
+		class="h-full w-full object-cover"
+		decoding="async"
+	/>
 	<div
 		class="via-accent/60 absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent"
 	></div>
