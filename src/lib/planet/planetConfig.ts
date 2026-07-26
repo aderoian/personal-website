@@ -34,7 +34,7 @@ export const planetConfig = {
 	scene: {
 		/** Planet group scale in the Three.js scene. */
 		scale: 0.58,
-		position: { x: 0.48, y: 0.22, z: 0 },
+		position: { x: 0, y: 0, z: 0 },
 		tiltZDeg: 23,
 		tiltX: 0.15,
 		spinSpeed: 0.0022,
@@ -42,8 +42,8 @@ export const planetConfig = {
 			fov: 40,
 			near: 0.1,
 			far: 100,
-			position: { x: 0, y: 0.12, z: 3.55 },
-			lookAt: { x: 0.32, y: 0.1, z: 0 },
+			position: { x: 0, y: 0, z: 3.55 },
+			lookAt: { x: 0, y: 0, z: 0 },
 			/** Camera Z when aspect is portrait-like. */
 			portraitZ: 4.05,
 			portraitAspectBelow: 0.85

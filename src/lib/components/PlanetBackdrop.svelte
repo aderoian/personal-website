@@ -10,7 +10,6 @@
 		Vector3,
 		WebGLRenderer
 	} from 'three';
-	import { generatePlanet } from '$lib/planet/generatePlanet';
 	import { planetConfig, randomSeaLevel } from '$lib/planet/planetConfig';
 
 	let container: HTMLDivElement | undefined = $state();
@@ -60,27 +59,9 @@
 		let planetGroup: Group | null = null;
 		let updatePlanet: (elapsed: number, dir: [number, number, number]) => void = () => {};
 		let disposePlanet: () => void = () => {};
-
-		try {
-			const generated = generatePlanet({
-				detail: cfg.detail,
-				radius: cfg.radius,
-				maxDisplacement: cfg.maxDisplacement,
-				seaLevel: randomSeaLevel(),
-				objectDensity: cfg.objectDensity
-			});
-			disposePlanet = generated.dispose;
-			updatePlanet = generated.update;
-			planetGroup = generated.group;
-			planetGroup.rotation.z = (sceneCfg.tiltZDeg * Math.PI) / 180;
-			planetGroup.rotation.x = sceneCfg.tiltX;
-			planetGroup.position.set(sceneCfg.position.x, sceneCfg.position.y, sceneCfg.position.z);
-			planetGroup.scale.setScalar(sceneCfg.scale);
-			scene.add(planetGroup);
-			updatePlanet(0, lightDirTuple);
-		} catch (err) {
-			console.error('Planet generation failed:', err);
-		}
+		let cancelled = false;
+		let idleHandle: number | null = null;
+		let deferTimer: ReturnType<typeof setTimeout> | null = null;
 
 		let frame = 0;
 		let running = true;
@@ -116,23 +97,90 @@
 			renderFrame();
 		};
 
+		const startAnimation = () => {
+			if (!running || cancelled || !planetGroup) return;
+			if (!reducedMotion) {
+				clock.start();
+				tick();
+			} else {
+				updatePlanet(0, lightDirTuple);
+				renderFrame();
+			}
+		};
+
+		const buildPlanet = async () => {
+			const { generatePlanet } = await import('$lib/planet/generatePlanet');
+			if (cancelled) return;
+
+			try {
+				const generated = generatePlanet({
+					detail: cfg.detail,
+					radius: cfg.radius,
+					maxDisplacement: cfg.maxDisplacement,
+					seaLevel: randomSeaLevel(),
+					objectDensity: cfg.objectDensity
+				});
+				if (cancelled) {
+					generated.dispose();
+					return;
+				}
+				disposePlanet = generated.dispose;
+				updatePlanet = generated.update;
+				planetGroup = generated.group;
+				planetGroup.rotation.z = (sceneCfg.tiltZDeg * Math.PI) / 180;
+				planetGroup.rotation.x = sceneCfg.tiltX;
+				planetGroup.position.set(sceneCfg.position.x, sceneCfg.position.y, sceneCfg.position.z);
+				planetGroup.scale.setScalar(sceneCfg.scale);
+				scene.add(planetGroup);
+				updatePlanet(0, lightDirTuple);
+				renderFrame();
+				startAnimation();
+			} catch (err) {
+				console.error('Planet generation failed:', err);
+			}
+		};
+
+		const scheduleGeneration = () => {
+			const run = () => {
+				idleHandle = null;
+				deferTimer = null;
+				void buildPlanet();
+			};
+			const ric = (
+				window as Window & {
+					requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+				}
+			).requestIdleCallback;
+			if (typeof ric === 'function') {
+				idleHandle = ric(run, { timeout: 1200 });
+			} else {
+				deferTimer = setTimeout(run, 0);
+			}
+		};
+
 		resize();
 		requestAnimationFrame(resize);
-		if (!reducedMotion && planetGroup) {
-			clock.start();
-			tick();
-		} else {
-			updatePlanet(0, lightDirTuple);
-			renderFrame();
-		}
+		// Double rAF: let the browser paint page content before the heavy generator runs.
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				if (!cancelled) scheduleGeneration();
+			});
+		});
 
 		const ro = new ResizeObserver(resize);
 		ro.observe(host);
 		window.addEventListener('visibilitychange', onVisibility);
 
 		return () => {
+			cancelled = true;
 			running = false;
 			cancelAnimationFrame(frame);
+			if (idleHandle !== null) {
+				const cic = (window as Window & { cancelIdleCallback?: (id: number) => void })
+					.cancelIdleCallback;
+				if (typeof cic === 'function') cic(idleHandle);
+			}
+			if (deferTimer !== null) clearTimeout(deferTimer);
 			ro.disconnect();
 			window.removeEventListener('visibilitychange', onVisibility);
 			disposePlanet();

@@ -29,6 +29,7 @@ import {
 	computeSlopes,
 	createTerrainNoise,
 	createTerrainParams,
+	sampleTerrainElevation,
 	sampleTerrainFields,
 	shapedDisplacement
 } from './terrain';
@@ -88,8 +89,12 @@ function hashSeed(): number {
 	return buf[0] >>> 0;
 }
 
-function posKey(x: number, y: number, z: number): string {
-	return `${x.toFixed(5)},${y.toFixed(5)},${z.toFixed(5)}`;
+/** Quantize a unit direction to a packed integer key (≈1e-5 precision). */
+function dirQuantKey(nx: number, ny: number, nz: number): number {
+	const qx = Math.round(nx * 1e5) + 100000;
+	const qy = Math.round(ny * 1e5) + 100000;
+	const qz = Math.round(nz * 1e5) + 100000;
+	return (qx * 200001 + qy) * 200001 + qz;
 }
 
 /** Weld duplicate face vertices so lakes/rivers can walk a real mesh graph. */
@@ -104,7 +109,7 @@ export function weldVertices(geometry: BufferGeometry): {
 	const vertCount = pos.count;
 	const vertToUnique = new Uint32Array(vertCount);
 	const uniqueToVerts: number[][] = [];
-	const keyToUnique = new Map<string, number>();
+	const keyToUnique = new Map<number, number>();
 	const uniqueDirs: number[] = [];
 
 	for (let i = 0; i < vertCount; i++) {
@@ -112,24 +117,27 @@ export function weldVertices(geometry: BufferGeometry): {
 		const y = pos.getY(i);
 		const z = pos.getZ(i);
 		const len = Math.hypot(x, y, z) || 1;
-		const key = posKey(x / len, y / len, z / len);
+		const nx = x / len;
+		const ny = y / len;
+		const nz = z / len;
+		const key = dirQuantKey(nx, ny, nz);
 		let u = keyToUnique.get(key);
 		if (u === undefined) {
 			u = uniqueToVerts.length;
 			keyToUnique.set(key, u);
 			uniqueToVerts.push([]);
-			uniqueDirs.push(x / len, y / len, z / len);
+			uniqueDirs.push(nx, ny, nz);
 		}
 		vertToUnique[i] = u;
 		uniqueToVerts[u].push(i);
 	}
 
 	const uniqueCount = uniqueToVerts.length;
-	const neighbors: number[][] = Array.from({ length: uniqueCount }, () => []);
+	const neighborSets: Array<Set<number>> = Array.from({ length: uniqueCount }, () => new Set());
 	const addEdge = (a: number, b: number) => {
 		if (a === b) return;
-		if (!neighbors[a].includes(b)) neighbors[a].push(b);
-		if (!neighbors[b].includes(a)) neighbors[b].push(a);
+		neighborSets[a].add(b);
+		neighborSets[b].add(a);
 	};
 
 	for (let i = 0; i < vertCount; i += 3) {
@@ -140,6 +148,8 @@ export function weldVertices(geometry: BufferGeometry): {
 		addEdge(b, c);
 		addEdge(c, a);
 	}
+
+	const neighbors: number[][] = neighborSets.map((s) => Array.from(s));
 
 	return {
 		uniqueCount,
@@ -191,11 +201,12 @@ export function findLakes(
 
 		const basin: number[] = [];
 		const queue = [seed];
+		let head = 0;
 		const visited = new Set<number>([seed]);
 		let spillsToOcean = false;
 
-		while (queue.length) {
-			const v = queue.shift()!;
+		while (head < queue.length) {
+			const v = queue[head++];
 			if (heights[v] < seaLevel) {
 				spillsToOcean = true;
 				break;
@@ -380,18 +391,12 @@ export function sampleOceanCoastAtDir(
 	by /= bLen;
 	bz /= bLen;
 
-	const probes: Array<[number, number, number]> = [
-		[tx, ty, tz],
-		[-tx, -ty, -tz],
-		[bx, by, bz],
-		[-bx, -by, -bz]
-	];
-
 	let landHits = 0;
-	for (const [px, py, pz] of probes) {
-		const sx = nx + px * probeAngle;
-		const sy = ny + py * probeAngle;
-		const sz = nz + pz * probeAngle;
+	const probeDirs = [tx, ty, tz, -tx, -ty, -tz, bx, by, bz, -bx, -by, -bz];
+	for (let p = 0; p < 12; p += 3) {
+		const sx = nx + probeDirs[p] * probeAngle;
+		const sy = ny + probeDirs[p + 1] * probeAngle;
+		const sz = nz + probeDirs[p + 2] * probeAngle;
 		const sl = Math.hypot(sx, sy, sz) || 1;
 		if (sampleElevation(sx / sl, sy / sl, sz / sl) >= seaLevel) landHits++;
 	}
@@ -418,20 +423,23 @@ export function paintOceanCoastAttribute(
 ): void {
 	const pos = geometry.getAttribute('position') as BufferAttribute;
 	const coasts = new Float32Array(pos.count);
+	// Deduplicate by unit direction — non-indexed icosahedra repeat corners ~6×.
+	const keyToCoast = new Map<number, number>();
 	for (let i = 0; i < pos.count; i++) {
 		const x = pos.getX(i);
 		const y = pos.getY(i);
 		const z = pos.getZ(i);
 		const len = Math.hypot(x, y, z) || 1;
-		coasts[i] = sampleOceanCoastAtDir(
-			x / len,
-			y / len,
-			z / len,
-			sampleElevation,
-			seaLevel,
-			width,
-			probeAngle
-		);
+		const nx = x / len;
+		const ny = y / len;
+		const nz = z / len;
+		const key = dirQuantKey(nx, ny, nz);
+		let coast = keyToCoast.get(key);
+		if (coast === undefined) {
+			coast = sampleOceanCoastAtDir(nx, ny, nz, sampleElevation, seaLevel, width, probeAngle);
+			keyToCoast.set(key, coast);
+		}
+		coasts[i] = coast;
 	}
 	geometry.setAttribute('aCoast', new BufferAttribute(coasts, 1));
 }
@@ -744,7 +752,7 @@ export function generatePlanet(options: PlanetOptions = {}): GeneratedPlanet {
 	const foamCfg = cfg.water.foam;
 	paintOceanCoastAttribute(
 		waterGeo,
-		(nx, ny, nz) => sampleTerrainFields(nx, ny, nz, noise, params).elevation,
+		(nx, ny, nz) => sampleTerrainElevation(nx, ny, nz, noise, params).elevation,
 		seaLevel,
 		foamCfg.oceanCoastWidth,
 		foamCfg.oceanCoastProbe
@@ -940,6 +948,7 @@ export {
 	getPlaceableDomain
 } from './placeableObjects';
 export {
+	sampleTerrainElevation,
 	sampleTerrainFields,
 	shapedDisplacement,
 	createTerrainNoise,

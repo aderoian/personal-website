@@ -4,7 +4,6 @@
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Button from '$lib/components/Button.svelte';
-	import PlanetBackdrop from '$lib/components/PlanetBackdrop.svelte';
 	import { site } from '$lib/config';
 	import type { PageData } from './$types';
 
@@ -20,8 +19,6 @@
 	}}
 />
 
-<PlanetBackdrop />
-
 <div class="relative z-10 flex flex-col gap-24 md:gap-32">
 	<section class="grid items-start gap-10 md:grid-cols-[1fr_auto]">
 		<div class="panel motion-stagger space-y-4 p-6 md:p-8">
@@ -31,14 +28,14 @@
 			</h1>
 			<p class="text-text-muted max-w-2xl text-lg">
 				I’m a systems and software engineer focused on building efficient, scalable, and reliable
-				software from network servers and game engines to developer tooling. I enjoy working on a wide
-				range of projects, from small tools to large systems. My work emphasizes clean architecture,
-				predictable behavior under load, and practical performance.
+				software from network servers and game engines to developer tooling. I enjoy working on a
+				wide range of projects, from small tools to large systems. My work emphasizes clean
+				architecture, predictable behavior under load, and practical performance.
 			</p>
 			<p class="text-text-muted max-w-2xl">
 				This site is a snapshot of what I’ve been building or have worked on. Explore featured work
-				below or browse the <a href="/projects">full project list</a>. You can also view write-ups in
-				the <a href="/blog">blog</a>. If you’re interested in a project, reach out via
+				below or browse the <a href="/projects">full project list</a>. You can also view write-ups
+				in the <a href="/blog">blog</a>. If you’re interested in a project, reach out via
 				<a href="/contact">contact</a>.
 			</p>
 		</div>
@@ -56,8 +53,8 @@
 				</p>
 				<h2 id="gildenkrieg-heading" class="text-text mb-3 text-2xl font-semibold">Gildenkrieg</h2>
 				<p class="text-text-muted mb-4 max-w-xl">
-					A strategic MMO experience taking place across the universe built around guild warfare, empire building,
-					territory control, and emergent team tactics.
+					A strategic MMO experience taking place across the universe built around guild warfare,
+					empire building, territory control, and emergent team tactics.
 				</p>
 				<ul class="text-text-muted mb-6 space-y-2 text-sm">
 					<li class="flex items-start gap-2">

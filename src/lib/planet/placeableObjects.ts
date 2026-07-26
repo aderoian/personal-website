@@ -759,8 +759,11 @@ export function emptyPlaceableCounts(): PlaceableCounts {
 	return counts;
 }
 
+let cachedRegistry: PlaceableDef[] | null = null;
+
 export function getPlaceableRegistry(): PlaceableDef[] {
-	return buildRegistry();
+	if (!cachedRegistry) cachedRegistry = buildRegistry();
+	return cachedRegistry;
 }
 
 export function getPlaceableDomain(kind: PlaceableKind): PlaceableDomain {
@@ -795,6 +798,63 @@ function findNearestSurface(
 
 type PlacedItem = { point: SurfacePoint; scale: number; yaw: number; kind: PlaceableKind };
 
+/** Spherical grid for O(1) neighborhood queries during placeable separation. */
+class SeparationIndex {
+	private readonly invCell: number;
+	private readonly buckets = new Map<number, PlacedItem[]>();
+
+	constructor(minSeparationRad: number) {
+		// Cartesian cell size ≤ chord length of the separation angle so neighbors
+		// within the angular threshold always fall in the same or adjacent cells.
+		const chord = 2 * Math.sin(Math.max(minSeparationRad, 1e-6) / 2);
+		this.invCell = 1 / chord;
+	}
+
+	private cellKey(ix: number, iy: number, iz: number): number {
+		// Pack signed cell coords; offsets keep keys non-negative and unique enough.
+		return (ix + 512) * 1_048_576 + (iy + 512) * 1024 + (iz + 512);
+	}
+
+	private coords(point: SurfacePoint): [number, number, number] {
+		return [
+			Math.floor(point.dirX * this.invCell),
+			Math.floor(point.dirY * this.invCell),
+			Math.floor(point.dirZ * this.invCell)
+		];
+	}
+
+	farEnough(point: SurfacePoint, minSepDot: number): boolean {
+		const [ix, iy, iz] = this.coords(point);
+		for (let dx = -1; dx <= 1; dx++) {
+			for (let dy = -1; dy <= 1; dy++) {
+				for (let dz = -1; dz <= 1; dz++) {
+					const bucket = this.buckets.get(this.cellKey(ix + dx, iy + dy, iz + dz));
+					if (!bucket) continue;
+					for (const other of bucket) {
+						const dot =
+							point.dirX * other.point.dirX +
+							point.dirY * other.point.dirY +
+							point.dirZ * other.point.dirZ;
+						if (dot > minSepDot) return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	add(item: PlacedItem): void {
+		const [ix, iy, iz] = this.coords(item.point);
+		const key = this.cellKey(ix, iy, iz);
+		let bucket = this.buckets.get(key);
+		if (!bucket) {
+			bucket = [];
+			this.buckets.set(key, bucket);
+		}
+		bucket.push(item);
+	}
+}
+
 /**
  * Build instanced placeables from the registry on valid surface points.
  * Uses shared cross-type angular spacing. Deterministic for a given rng + surface set.
@@ -808,7 +868,9 @@ export function placeObjects(
 	const rng = options.rng;
 	const density = options.density ?? 1;
 	const registry = getPlaceableRegistry();
-	const minSepDot = Math.cos((cfg.minSeparationDeg * Math.PI) / 180);
+	const minSepRad = (cfg.minSeparationDeg * Math.PI) / 180;
+	const minSepDot = Math.cos(minSepRad);
+	const separation = new SeparationIndex(minSepRad);
 
 	const shuffle = <T>(arr: T[]) => {
 		for (let i = arr.length - 1; i > 0; i--) {
@@ -818,19 +880,7 @@ export function placeObjects(
 		return arr;
 	};
 
-	const farEnough = (point: SurfacePoint, placed: PlacedItem[]) => {
-		for (const other of placed) {
-			const dot =
-				point.dirX * other.point.dirX +
-				point.dirY * other.point.dirY +
-				point.dirZ * other.point.dirZ;
-			if (dot > minSepDot) return false;
-		}
-		return true;
-	};
-
-	/** All placements share one global set for cross-type separation. */
-	const allPlaced: PlacedItem[] = [];
+	/** Placements share one global separation index for cross-type spacing. */
 	const byKind = new Map<PlaceableKind, PlacedItem[]>();
 	for (const def of registry) byKind.set(def.kind, []);
 
@@ -854,7 +904,7 @@ export function placeObjects(
 			const point = candidates[i];
 			const weight = def.biomeWeight[point.biome] ?? 0;
 			if (rng() > def.chance * weight * density) continue;
-			if (!farEnough(point, allPlaced)) continue;
+			if (!separation.farEnough(point, minSepDot)) continue;
 			const entry: PlacedItem = {
 				point,
 				scale: def.scale.min + rng() * def.scale.range,
@@ -862,7 +912,7 @@ export function placeObjects(
 				kind: def.kind
 			};
 			list.push(entry);
-			allPlaced.push(entry);
+			separation.add(entry);
 		}
 	}
 
@@ -885,7 +935,7 @@ export function placeObjects(
 			kind: desc.kind
 		};
 		byKind.get(desc.kind)?.push(entry);
-		allPlaced.push(entry);
+		separation.add(entry);
 	}
 
 	const meshes: InstancedMesh[] = [];

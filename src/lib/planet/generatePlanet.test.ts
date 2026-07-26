@@ -43,7 +43,12 @@ import {
 	shapedDisplacement,
 	terrainOceanCoastFactor
 } from './generatePlanet';
-import { createTerrainNoise, createTerrainParams, sampleTerrainFields } from './terrain';
+import {
+	createTerrainNoise,
+	createTerrainParams,
+	sampleTerrainElevation,
+	sampleTerrainFields
+} from './terrain';
 import {
 	createLakeWaterMaterial,
 	createRiverWaterMaterial,
@@ -254,6 +259,28 @@ describe('terrain fields', () => {
 		expect(a).toEqual(b);
 	});
 
+	it('sampleTerrainElevation matches sampleTerrainFields elevation channels', () => {
+		const noise = createTerrainNoise(1234);
+		const params = createTerrainParams(createRng(1234), 0.5);
+		const dirs = [
+			[1, 0, 0],
+			[0, 1, 0],
+			[-0.4, 0.5, 0.7],
+			[0.2, -0.9, 0.1]
+		];
+		for (const [x, y, z] of dirs) {
+			const len = Math.hypot(x, y, z) || 1;
+			const nx = x / len;
+			const ny = y / len;
+			const nz = z / len;
+			const full = sampleTerrainFields(nx, ny, nz, noise, params);
+			const elev = sampleTerrainElevation(nx, ny, nz, noise, params);
+			expect(elev.elevation).toBe(full.elevation);
+			expect(elev.mountain).toBe(full.mountain);
+			expect(elev.continentalness).toBe(full.continentalness);
+		}
+	});
+
 	it('boosts displacement for mountains above sea level', () => {
 		const low = shapedDisplacement(0.55, 0.1, 0.48, 0.5, false);
 		const high = shapedDisplacement(0.9, 0.9, 0.48, 0.5, false);
@@ -329,6 +356,8 @@ describe('placeable registry', () => {
 		expect(getPlaceableDomain('settlement')).toBe('land');
 		expect(getPlaceableDomain('lighthouse')).toBe('coast');
 		expect(getPlaceableDomain('ship')).toBe('ocean');
+		// Registry is cached — same array identity across calls.
+		expect(getPlaceableRegistry()).toBe(registry);
 	});
 
 	it('places biome-specific variants deterministically with cross-type spacing', () => {
@@ -797,8 +826,41 @@ describe('generatePlanet', () => {
 		const elapsed = performance.now() - start;
 		expect(planet.biomes.length).toBeGreaterThan(8000);
 		expect(totalPlaceableCount(planet.objectCounts)).toBeGreaterThan(0);
-		expect(elapsed).toBeLessThan(12000);
+		// Coast foam must be present after deduped painting.
+		const coast = planet.layers.water.geometry.getAttribute('aCoast');
+		let maxCoast = 0;
+		let coastSum = 0;
+		for (let i = 0; i < coast.count; i++) {
+			const v = coast.getX(i);
+			maxCoast = Math.max(maxCoast, v);
+			coastSum += v;
+		}
+		expect(maxCoast).toBeGreaterThan(0.2);
+		expect(coastSum).toBeGreaterThan(0);
+		// Optimized path should stay well under the historical 12s soft gate.
+		expect(elapsed).toBeLessThan(8000);
 		planet.update(1, [0.5, 0.7, 0.4]);
 		planet.dispose();
+	});
+
+	it('keeps coast foam and placeables deterministic at medium detail', () => {
+		const opts = { seed: 4242, detail: 12, objectDensity: 1, seaLevel: 0.53, aircraftCount: 0 };
+		const a = generatePlanet(opts);
+		const b = generatePlanet(opts);
+		expect(a.objectCounts).toEqual(b.objectCounts);
+		expect(a.biomes).toEqual(b.biomes);
+		const coastA = a.layers.water.geometry.getAttribute('aCoast');
+		const coastB = b.layers.water.geometry.getAttribute('aCoast');
+		expect(coastA.count).toBe(coastB.count);
+		let digestA = 0;
+		let digestB = 0;
+		for (let i = 0; i < coastA.count; i += 17) {
+			digestA += coastA.getX(i);
+			digestB += coastB.getX(i);
+		}
+		expect(digestA).toBeCloseTo(digestB, 10);
+		expect(digestA).toBeGreaterThan(0);
+		a.dispose();
+		b.dispose();
 	});
 });

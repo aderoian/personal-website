@@ -48,17 +48,17 @@ export function createTerrainParams(rng: () => number, seaLevel: number): Terrai
 }
 
 /**
- * Sample continentalness, elevation, mountain strength, moisture, and temperature
- * for a unit-sphere direction. Slope is filled later from neighbors.
+ * Elevation + mountain fields only — same math as `sampleTerrainFields` for those
+ * channels, without moisture/temperature (used by coastline foam baking).
  */
-export function sampleTerrainFields(
+export function sampleTerrainElevation(
 	nx: number,
 	ny: number,
 	nz: number,
 	noise: TerrainNoiseSet,
 	params: TerrainParams
-): Omit<TerrainFields, 'slope'> {
-	const { freq, moistureFreq, tempFreq, mountainFreq, warp } = params;
+): { continentalness: number; elevation: number; mountain: number } {
+	const { freq, mountainFreq, warp } = params;
 	const land = planetConfig.land;
 	const t = planetConfig.terrain;
 	const mt = t.mountain;
@@ -127,6 +127,31 @@ export function sampleTerrainFields(
 	let elevation =
 		base * w.base + continentalness * w.continentalness + mountain * w.mountain - valley;
 	elevation = Math.min(1, Math.max(0, elevation));
+
+	return { continentalness, elevation, mountain };
+}
+
+/**
+ * Sample continentalness, elevation, mountain strength, moisture, and temperature
+ * for a unit-sphere direction. Slope is filled later from neighbors.
+ */
+export function sampleTerrainFields(
+	nx: number,
+	ny: number,
+	nz: number,
+	noise: TerrainNoiseSet,
+	params: TerrainParams
+): Omit<TerrainFields, 'slope'> {
+	const { moistureFreq, tempFreq } = params;
+	const t = planetConfig.terrain;
+
+	const { continentalness, elevation, mountain } = sampleTerrainElevation(
+		nx,
+		ny,
+		nz,
+		noise,
+		params
+	);
 
 	const moistureRaw = fbm3(
 		noise.moisture,
