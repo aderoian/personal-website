@@ -35,6 +35,22 @@ describe('markdown rendering', () => {
 		expect(html).toContain('hljs-keyword');
 	});
 
+	it('emits mermaid fences as diagram sources instead of highlighted code', () => {
+		const html = renderMarkdown('```mermaid\nflowchart TD\n  A-->B\n```');
+		expect(html).toContain('class="mermaid-source"');
+		expect(html).toContain('data-language="mermaid"');
+		expect(html).toContain('flowchart TD');
+		expect(html).toContain('A--&gt;B');
+		expect(html).not.toContain('code-block');
+		expect(html).not.toContain('hljs');
+	});
+
+	it('escapes HTML inside mermaid fences', () => {
+		const html = renderMarkdown('```mermaid\nflowchart TD\n  A["<script>alert(1)</script>"]\n```');
+		expect(html).toContain('&lt;script&gt;');
+		expect(html).not.toContain('<script>alert');
+	});
+
 	it('falls back safely for unknown languages', () => {
 		const { html, language } = highlightCode('print("hi")', 'not-a-real-lang');
 		expect(language).toBe('not-a-real-lang');

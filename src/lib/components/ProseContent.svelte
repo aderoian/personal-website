@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { EXTERNAL_LINK_REL, isExternalHref } from '$lib/links';
+	import type { Mermaid } from 'mermaid';
 
 	let {
 		html,
@@ -11,6 +12,8 @@
 	} = $props();
 
 	let root: HTMLElement | undefined = $state();
+	let mermaidModule: Promise<Mermaid> | undefined;
+	let renderGeneration = 0;
 
 	onMount(() => {
 		enhanceContent();
@@ -27,6 +30,7 @@
 		if (!root) return;
 		enhanceExternalLinks();
 		enhanceCodeBlocks();
+		void enhanceMermaidDiagrams();
 	}
 
 	function enhanceExternalLinks() {
@@ -95,6 +99,64 @@
 			toolbar.append(label, button, status);
 			pre.replaceWith(shell);
 			shell.append(toolbar, pre);
+		}
+	}
+
+	function siteMermaidTheme(): 'dark' | 'default' {
+		return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+	}
+
+	function loadMermaid(): Promise<Mermaid> {
+		if (!mermaidModule) {
+			mermaidModule = import('mermaid').then(({ default: mermaid }) => {
+				mermaid.initialize({
+					startOnLoad: false,
+					securityLevel: 'strict',
+					theme: siteMermaidTheme()
+				});
+				return mermaid;
+			});
+		}
+		return mermaidModule;
+	}
+
+	async function enhanceMermaidDiagrams() {
+		if (!root) return;
+
+		const sources = [...root.querySelectorAll('pre.mermaid-source')];
+		if (sources.length === 0) return;
+
+		const generation = ++renderGeneration;
+		const mermaid = await loadMermaid();
+		if (generation !== renderGeneration || !root) return;
+
+		mermaid.initialize({
+			startOnLoad: false,
+			securityLevel: 'strict',
+			theme: siteMermaidTheme()
+		});
+
+		for (const pre of sources) {
+			if (!root.contains(pre)) continue;
+
+			const definition = pre.querySelector('code')?.textContent ?? pre.textContent ?? '';
+			const figure = document.createElement('figure');
+			figure.className = 'mermaid-diagram';
+			figure.setAttribute('role', 'img');
+			figure.setAttribute('aria-label', 'Diagram');
+
+			try {
+				const id = `mermaid-${crypto.randomUUID()}`;
+				const { svg } = await mermaid.render(id, definition);
+				if (generation !== renderGeneration || !root.contains(pre)) continue;
+				figure.innerHTML = svg;
+			} catch {
+				if (generation !== renderGeneration || !root.contains(pre)) continue;
+				figure.classList.add('is-error');
+				figure.textContent = 'Unable to render diagram.';
+			}
+
+			pre.replaceWith(figure);
 		}
 	}
 </script>

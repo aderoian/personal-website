@@ -87,9 +87,18 @@ export function highlightCode(code: string, language?: string): { html: string; 
 	};
 }
 
+function renderMermaidFence(source: string): string {
+	return `<pre class="mermaid-source" data-language="mermaid"><code class="language-mermaid">${escapeHtml(source)}</code></pre>\n`;
+}
+
 function renderFencedCode(token: Tokens.Code): string {
-	const { html, language } = highlightCode(token.text, token.lang);
-	const langAttr = escapeHtml(language);
+	const language = normalizeLanguage(token.lang);
+	if (language === 'mermaid') {
+		return renderMermaidFence(token.text);
+	}
+
+	const { html, language: resolved } = highlightCode(token.text, token.lang);
+	const langAttr = escapeHtml(resolved);
 	return `<pre class="code-block" data-language="${langAttr}"><code class="language-${langAttr} hljs">${html}</code></pre>\n`;
 }
 
