@@ -13,12 +13,18 @@ import {
 	canPlaceBroadleafTree,
 	canPlaceCactus,
 	canPlaceCoastalDriftwood,
+	canPlaceCommsTower,
 	canPlaceIceSpire,
+	canPlaceLighthouse,
+	canPlaceOffshorePlatform,
 	canPlaceRock,
+	canPlaceSettlement,
+	canPlaceShip,
 	canPlaceSnowFormation,
 	canPlaceTree,
 	canPlaceTropicalTree,
 	emptyPlaceableCounts,
+	getPlaceableDomain,
 	getPlaceableRegistry,
 	placeObjects,
 	PLACEABLE_KINDS,
@@ -30,7 +36,12 @@ import {
 	extractInlandWaterGeometry,
 	findLakes,
 	generatePlanet,
-	shapedDisplacement
+	inlandWaterEdgeFactor,
+	oceanShoreFactor,
+	paintOceanCoastAttribute,
+	sampleOceanCoastAtDir,
+	shapedDisplacement,
+	terrainOceanCoastFactor
 } from './generatePlanet';
 import { createTerrainNoise, createTerrainParams, sampleTerrainFields } from './terrain';
 import {
@@ -38,8 +49,11 @@ import {
 	createRiverWaterMaterial,
 	createWaterMaterial
 } from './waterMaterial';
-import { createAtmosphereMaterial } from './atmosphereMaterial';
-import { BufferAttribute, Group } from 'three';
+import { createAtmosphereMaterial, createInnerAtmosphereMaterial } from './atmosphereMaterial';
+import { createCloudMaterial } from './cloudMaterial';
+import { createAircraft, createPlaneGeometry } from './aerialFeatures';
+import { planetConfig } from './planetConfig';
+import { BufferAttribute, Group, IcosahedronGeometry, InstancedMesh, Matrix4 } from 'three';
 
 const ALL_BIOMES: BiomeKind[] = [
 	'deepOcean',
@@ -62,6 +76,10 @@ const ALL_BIOMES: BiomeKind[] = [
 ];
 
 function point(partial: Partial<SurfacePoint> & Pick<SurfacePoint, 'biome'>): SurfacePoint {
+	const biome = partial.biome;
+	const domain =
+		partial.domain ??
+		(biome === 'deepOcean' || biome === 'shallow' ? 'ocean' : biome === 'beach' ? 'coast' : 'land');
 	return {
 		index: 0,
 		dirX: 0,
@@ -71,6 +89,7 @@ function point(partial: Partial<SurfacePoint> & Pick<SurfacePoint, 'biome'>): Su
 		elevation: 0.2,
 		slope: 0.2,
 		mountain: 0.1,
+		domain,
 		...partial
 	};
 }
@@ -276,20 +295,40 @@ describe('placeable rules', () => {
 			false
 		);
 	});
+
+	it('allows man-made land and sea structures by domain terrain', () => {
+		expect(canPlaceSettlement(point({ biome: 'grassland', slope: 0.2, elevation: 0.05 }))).toBe(
+			true
+		);
+		expect(canPlaceSettlement(point({ biome: 'grassland', slope: 0.6, elevation: 0.05 }))).toBe(
+			false
+		);
+		expect(canPlaceCommsTower(point({ biome: 'rock', slope: 0.15, elevation: 0.08 }))).toBe(true);
+		expect(canPlaceLighthouse(point({ biome: 'beach', elevation: 0.02, slope: 0.2 }))).toBe(true);
+		expect(
+			canPlaceOffshorePlatform(point({ biome: 'shallow', domain: 'ocean', elevation: 0.04 }))
+		).toBe(true);
+		expect(canPlaceShip(point({ biome: 'shallow', domain: 'ocean', elevation: 0.03 }))).toBe(true);
+		expect(canPlaceShip(point({ biome: 'shallow', domain: 'ocean', elevation: 0.5 }))).toBe(false);
+	});
 });
 
 describe('placeable registry', () => {
-	it('exposes one definition per placeable kind', () => {
+	it('exposes one definition per placeable kind with a domain', () => {
 		const registry = getPlaceableRegistry();
 		expect(registry.map((d) => d.kind).sort()).toEqual([...PLACEABLE_KINDS].sort());
 		for (const def of registry) {
 			expect(def.maxCount).toBeGreaterThan(0);
 			expect(def.chance).toBeGreaterThan(0);
+			expect(['land', 'coast', 'ocean']).toContain(def.domain);
 			expect(Object.keys(def.biomeWeight).length).toBeGreaterThan(0);
 			const geo = def.createGeometry();
 			expect(geo.getAttribute('position').count).toBeGreaterThan(0);
 			geo.dispose();
 		}
+		expect(getPlaceableDomain('settlement')).toBe('land');
+		expect(getPlaceableDomain('lighthouse')).toBe('coast');
+		expect(getPlaceableDomain('ship')).toBe('ocean');
 	});
 
 	it('places biome-specific variants deterministically with cross-type spacing', () => {
@@ -304,7 +343,9 @@ describe('placeable registry', () => {
 			'beach',
 			'snow',
 			'mountain',
-			'rock'
+			'rock',
+			'shallow',
+			'deepOcean'
 		];
 		let i = 0;
 		for (const biome of biomes) {
@@ -315,16 +356,23 @@ describe('placeable registry', () => {
 				const y = Math.sin(b);
 				const z = Math.cos(b) * Math.sin(a);
 				const len = Math.hypot(x, y, z) || 1;
+				const domain =
+					biome === 'shallow' || biome === 'deepOcean'
+						? 'ocean'
+						: biome === 'beach'
+							? 'coast'
+							: 'land';
 				points.push({
 					index: i++,
 					dirX: x / len,
 					dirY: y / len,
 					dirZ: z / len,
-					radius: 1.02,
+					radius: domain === 'ocean' ? 1 : 1.02,
 					biome,
-					elevation: biome === 'beach' ? 0.01 : 0.15,
+					elevation: domain === 'ocean' ? 0.03 : biome === 'beach' ? 0.01 : 0.15,
 					slope: biome === 'rock' || biome === 'mountain' ? 0.4 : 0.2,
-					mountain: biome === 'mountain' ? 0.6 : 0.1
+					mountain: biome === 'mountain' ? 0.6 : 0.1,
+					domain
 				});
 			}
 		}
@@ -342,10 +390,28 @@ describe('placeable registry', () => {
 		b.dispose();
 	});
 
-	it('honors explicit placements even when automatic density is zero', () => {
+	it('honors explicit land and sea placements even when automatic density is zero', () => {
 		const points = [
 			point({ biome: 'forest', dirX: 0, dirY: 1, dirZ: 0 }),
-			point({ biome: 'desert', dirX: 1, dirY: 0, dirZ: 0, index: 1 })
+			point({ biome: 'desert', dirX: 1, dirY: 0, dirZ: 0, index: 1 }),
+			point({
+				biome: 'shallow',
+				domain: 'ocean',
+				dirX: 0,
+				dirY: 0,
+				dirZ: 1,
+				index: 2,
+				elevation: 0.02
+			}),
+			point({
+				biome: 'beach',
+				domain: 'coast',
+				dirX: -1,
+				dirY: 0,
+				dirZ: 0,
+				index: 3,
+				elevation: 0.01
+			})
 		];
 		const group = new Group();
 		const bundle = placeObjects(group, points, {
@@ -354,11 +420,17 @@ describe('placeable registry', () => {
 			maxCounts: Object.fromEntries(PLACEABLE_KINDS.map((k) => [k, 0])),
 			explicit: [
 				{ kind: 'broadleafTree', direction: [0, 1, 0], scale: 1.1 },
-				{ kind: 'cactus', direction: [1, 0, 0], scale: 0.9 }
+				{ kind: 'cactus', direction: [1, 0, 0], scale: 0.9 },
+				{ kind: 'ship', direction: [0, 0, 1], scale: 1 },
+				{ kind: 'lighthouse', direction: [-1, 0, 0], scale: 1.05 },
+				{ kind: 'settlement', direction: [0, 1, 0], scale: 1.2 }
 			]
 		});
 		expect(bundle.counts.broadleafTree).toBe(1);
 		expect(bundle.counts.cactus).toBe(1);
+		expect(bundle.counts.ship).toBe(1);
+		expect(bundle.counts.lighthouse).toBe(1);
+		expect(bundle.counts.settlement).toBe(1);
 		bundle.dispose();
 	});
 });
@@ -369,37 +441,145 @@ describe('materials', () => {
 		const lake = createLakeWaterMaterial();
 		const river = createRiverWaterMaterial();
 		const atm = createAtmosphereMaterial();
+		const atmInner = createInnerAtmosphereMaterial();
 		water.update(1.5, [0, 1, 0]);
 		lake.update(1.5, [0, 1, 0]);
 		river.update(1.5, [0, 1, 0]);
 		atm.update([0, 1, 0]);
+		atmInner.update([0, 1, 0]);
 		expect(water.uniforms.uTime.value).toBe(1.5);
 		expect(lake.uniforms.uTime.value).toBe(1.5);
 		expect(river.uniforms.uWaveScale.value).toBeGreaterThan(water.uniforms.uWaveScale.value);
+		expect(water.uniforms.uFoamStrength.value).toBeGreaterThan(0);
+		expect(lake.uniforms.uOceanFoam.value).toBe(0);
+		expect(river.uniforms.uOceanFoam.value).toBe(0);
+		expect(water.uniforms.uOceanFoam.value).toBeGreaterThan(0);
+		// Inland water is matte / low-glare relative to ocean.
+		expect(lake.uniforms.uSpecularStrength.value).toBeLessThan(
+			water.uniforms.uSpecularStrength.value
+		);
+		expect(river.uniforms.uSpecularStrength.value).toBeLessThan(
+			water.uniforms.uSpecularStrength.value
+		);
+		expect(lake.uniforms.uSpecularStrength.value).toBeLessThan(0.15);
+		expect(river.uniforms.uSpecularStrength.value).toBeLessThan(0.2);
+		expect(lake.uniforms.uFresnelBias.value).toBeLessThan(water.uniforms.uFresnelBias.value);
+		expect(river.uniforms.uWaveStrength.value).toBeGreaterThan(lake.uniforms.uWaveStrength.value);
 		expect(atm.uniforms.uLightDir.value).toEqual([0, 1, 0]);
+		expect(atm.uniforms.uHazeStrength.value).toBeGreaterThan(0);
+		expect(atm.uniforms.uBlendEnd.value).toBeGreaterThan(atm.uniforms.uBlendStart.value);
+		expect(atmInner.uniforms.uHazeStrength.value).toBeGreaterThan(0);
+		expect(atmInner.uniforms.uBlendStart.value).toBe(atm.uniforms.uBlendStart.value);
 		water.dispose();
 		lake.dispose();
 		river.dispose();
 		atm.dispose();
+		atmInner.dispose();
+	});
+
+	it('matches lake/river specular presets from planetConfig', () => {
+		const lake = createLakeWaterMaterial();
+		const river = createRiverWaterMaterial();
+		const ocean = createWaterMaterial();
+		expect(lake.uniforms.uSpecularStrength.value).toBe(planetConfig.water.lake.specularStrength);
+		expect(lake.uniforms.uSpecularPower.value).toBe(planetConfig.water.lake.specularPower);
+		expect(river.uniforms.uSpecularStrength.value).toBe(planetConfig.water.river.specularStrength);
+		expect(ocean.uniforms.uOceanFoam.value).toBe(planetConfig.water.foam.oceanCoast);
+		lake.dispose();
+		river.dispose();
+		ocean.dispose();
+	});
+
+	it('creates sparse fluffy cloud material with patch thresholds', () => {
+		const clouds = createCloudMaterial(99);
+		clouds.update(2.5, [0.2, 0.8, 0.1]);
+		expect(clouds.uniforms.uTime.value).toBe(2.5);
+		expect(clouds.uniforms.uRotation.value).toBe(2.5 * planetConfig.clouds.rotationSpeed);
+		expect(clouds.uniforms.uLightDir.value).toEqual([0.2, 0.8, 0.1]);
+		expect(clouds.uniforms.uOpacity.value).toBe(planetConfig.clouds.opacity);
+		// Localized patches can be denser; veil-like low opacity is no longer the goal.
+		expect(clouds.uniforms.uCoverage.value).toBeGreaterThan(0.5);
+		expect(clouds.uniforms.uFluffiness.value).toBeGreaterThan(0);
+		expect(clouds.uniforms.uPatchScale.value).toBeGreaterThan(0);
+		expect(clouds.uniforms.uFaceDensity.value).toBeLessThanOrEqual(1);
+		expect(clouds.material.depthWrite).toBe(false);
+		expect(clouds.material.transparent).toBe(true);
+		clouds.dispose();
+	});
+});
+
+describe('aircraft', () => {
+	it('builds deterministic seeded planes on great-circle routes', () => {
+		const geo = createPlaneGeometry();
+		expect(geo.getAttribute('position').count).toBeGreaterThan(0);
+		geo.dispose();
+
+		const a = createAircraft(1, 4242, 4);
+		const b = createAircraft(1, 4242, 4);
+		expect(a.count).toBe(4);
+		expect(b.count).toBe(4);
+		a.update(1.25);
+		b.update(1.25);
+		const meshA = a.group.children[0] as InstancedMesh;
+		const meshB = b.group.children[0] as InstancedMesh;
+		const ma = new Matrix4();
+		const mb = new Matrix4();
+		meshA.getMatrixAt(0, ma);
+		meshB.getMatrixAt(0, mb);
+		expect([...ma.elements]).toEqual([...mb.elements]);
+		a.update(0);
+		b.dispose();
+		a.dispose();
+	});
+
+	it('returns an empty fleet when count is zero', () => {
+		const fleet = createAircraft(1, 1, 0);
+		expect(fleet.count).toBe(0);
+		fleet.update(10);
+		fleet.dispose();
 	});
 });
 
 describe('extractInlandWaterGeometry', () => {
 	it('lifts faces that belong to water vertex sets', () => {
 		const positions = new Float32Array([
-			1, 0, 0, 0, 1, 0, 0, 0, 1, // face 0 — water
-			0, 0, 1, 0, -1, 0, 1, 0, 0 // face 1 — mixed, only 1 water vert at index mapped
+			1,
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0,
+			1, // face 0 — water
+			0,
+			0,
+			1,
+			0,
+			-1,
+			0,
+			1,
+			0,
+			0 // face 1 — mixed, only 1 water vert at index mapped
 		]);
 		// Unique indices: 0,1,2 for first face; 2,3,0 for second — mark 0,1,2 as water so face0 qualifies
 		const posAttr = new BufferAttribute(positions, 3);
 		const vertToUnique = new Uint32Array([0, 1, 2, 2, 3, 0]);
 		const waterVerts = new Set([0, 1, 2]);
-		const geo = extractInlandWaterGeometry(posAttr, vertToUnique, waterVerts, 0.01);
+		const neighbors = [[1, 2], [0, 2], [0, 1, 3], [2]];
+		const geo = extractInlandWaterGeometry(posAttr, vertToUnique, waterVerts, 0.01, neighbors);
 		expect(geo).not.toBeNull();
 		const out = geo!.getAttribute('position');
 		expect(out.count).toBeGreaterThanOrEqual(3);
 		const len0 = Math.hypot(out.getX(0), out.getY(0), out.getZ(0));
 		expect(len0).toBeGreaterThan(1);
+		const edge = geo!.getAttribute('aEdge');
+		expect(edge).toBeTruthy();
+		expect(edge.count).toBe(out.count);
+		// Vert 2 borders land (3) so its edge factor should be elevated.
+		let maxEdge = 0;
+		for (let i = 0; i < edge.count; i++) maxEdge = Math.max(maxEdge, edge.getX(i));
+		expect(maxEdge).toBeGreaterThan(0.4);
 		geo!.dispose();
 	});
 
@@ -407,6 +587,82 @@ describe('extractInlandWaterGeometry', () => {
 		const posAttr = new BufferAttribute(new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]), 3);
 		const vertToUnique = new Uint32Array([0, 1, 2]);
 		expect(extractInlandWaterGeometry(posAttr, vertToUnique, new Set(), 0.01)).toBeNull();
+	});
+});
+
+describe('inlandWaterEdgeFactor', () => {
+	it('is 1 on land, 0 deep interior, and elevated on shore verts', () => {
+		const water = new Set([0, 1]);
+		const neighbors = [
+			[1, 2], // shore — neighbor 2 is land
+			[0], // interior relative to water set
+			[0]
+		];
+		expect(inlandWaterEdgeFactor(2, water, neighbors)).toBe(1);
+		expect(inlandWaterEdgeFactor(1, water, neighbors)).toBe(0);
+		expect(inlandWaterEdgeFactor(0, water, neighbors)).toBeGreaterThan(0.5);
+	});
+});
+
+describe('oceanShoreFactor', () => {
+	it('peaks at the shoreline and is zero on land or deep ocean', () => {
+		const sea = 0.53;
+		const width = 0.06;
+		expect(oceanShoreFactor(sea, sea, width)).toBe(1);
+		expect(oceanShoreFactor(sea + 0.01, sea, width)).toBe(0);
+		expect(oceanShoreFactor(sea - width, sea, width)).toBe(0);
+		expect(oceanShoreFactor(sea - width * 0.5, sea, width)).toBeGreaterThan(0.4);
+		expect(oceanShoreFactor(sea - width * 0.5, sea, width)).toBeLessThan(1);
+	});
+});
+
+describe('terrainOceanCoastFactor', () => {
+	it('elevates foam on ocean verts that touch land', () => {
+		const sea = 0.5;
+		const elevations = new Float32Array([0.48, 0.4, 0.6]);
+		const neighbors = [
+			[1, 2], // shallow ocean next to land
+			[0], // deep-ish, only ocean neighbor
+			[0]
+		];
+		expect(terrainOceanCoastFactor(2, elevations, sea, neighbors, 0.08)).toBe(0);
+		expect(terrainOceanCoastFactor(0, elevations, sea, neighbors, 0.08)).toBeGreaterThan(0.5);
+		expect(terrainOceanCoastFactor(1, elevations, sea, neighbors, 0.08)).toBe(
+			oceanShoreFactor(0.4, sea, 0.08)
+		);
+	});
+});
+
+describe('paintOceanCoastAttribute', () => {
+	it('writes aCoast with shoreline values from elevation samples', () => {
+		const geo = new IcosahedronGeometry(1, 2);
+		const sea = 0.5;
+		paintOceanCoastAttribute(
+			geo,
+			(nx) => (nx > 0.2 ? 0.7 : nx < -0.2 ? 0.2 : 0.48),
+			sea,
+			0.08,
+			0.05
+		);
+		const coast = geo.getAttribute('aCoast');
+		expect(coast).toBeTruthy();
+		expect(coast.count).toBe(geo.getAttribute('position').count);
+		let maxCoast = 0;
+		let zeroCount = 0;
+		for (let i = 0; i < coast.count; i++) {
+			const v = coast.getX(i);
+			maxCoast = Math.max(maxCoast, v);
+			if (v === 0) zeroCount++;
+		}
+		expect(maxCoast).toBeGreaterThan(0.35);
+		expect(zeroCount).toBeGreaterThan(0);
+		geo.dispose();
+	});
+
+	it('sampleOceanCoastAtDir is zero on land and positive near shore', () => {
+		const elev = (x: number) => (x > 0 ? 0.7 : 0.47);
+		expect(sampleOceanCoastAtDir(1, 0, 0, elev, 0.5, 0.08, 0.04)).toBe(0);
+		expect(sampleOceanCoastAtDir(-1, 0, 0, elev, 0.5, 0.08, 0.04)).toBeGreaterThan(0.3);
 	});
 });
 
@@ -423,31 +679,82 @@ describe('generatePlanet', () => {
 		b.dispose();
 	});
 
-	it('exposes terrain, water, and atmosphere layers', () => {
-		const planet = generatePlanet({ seed: 99, detail: 4, seaLevel: 0.53 });
+	it('exposes terrain, water, atmosphere, cloud, and aircraft layers', () => {
+		const planet = generatePlanet({ seed: 99, detail: 4, seaLevel: 0.53, aircraftCount: 3 });
 		expect(planet.layers.terrain.name).toBe('planet:terrain');
 		expect(planet.layers.water.name).toBe('planet:water');
 		expect(planet.layers.atmosphere.name).toBe('planet:atmosphere');
+		expect(planet.layers.atmosphereInner.name).toBe('planet:atmosphereInner');
+		expect(planet.layers.clouds?.name).toBe('planet:clouds');
+		expect(planet.layers.aircraft?.name).toBe('planet:aircraft');
+		expect(planet.aircraftCount).toBe(3);
 		expect(planet.group.children).toContain(planet.layers.terrain);
 		expect(planet.group.children).toContain(planet.layers.water);
 		expect(planet.group.children).toContain(planet.layers.atmosphere);
+		expect(planet.group.children).toContain(planet.layers.atmosphereInner);
+		expect(planet.group.children).toContain(planet.layers.clouds);
+		expect(planet.group.children).toContain(planet.layers.aircraft);
+		const coast = planet.layers.water.geometry.getAttribute('aCoast');
+		expect(coast).toBeTruthy();
+		expect(coast.count).toBe(planet.layers.water.geometry.getAttribute('position').count);
+		let maxCoast = 0;
+		for (let i = 0; i < coast.count; i++) maxCoast = Math.max(maxCoast, coast.getX(i));
+		expect(maxCoast).toBeGreaterThan(0.2);
 		if (planet.layers.lakes) {
 			expect(planet.layers.lakes.name).toBe('planet:lakes');
 			expect(planet.group.children).toContain(planet.layers.lakes);
+			expect(planet.layers.lakes.geometry.getAttribute('aEdge')).toBeTruthy();
 		}
 		if (planet.layers.rivers) {
 			expect(planet.layers.rivers.name).toBe('planet:rivers');
 			expect(planet.group.children).toContain(planet.layers.rivers);
+			expect(planet.layers.rivers.geometry.getAttribute('aEdge')).toBeTruthy();
 		}
 		planet.update(0.5, [1, 0, 0]);
+		planet.dispose();
+	});
+
+	it('can disable clouds and aircraft', () => {
+		const planet = generatePlanet({
+			seed: 55,
+			detail: 3,
+			seaLevel: 0.53,
+			clouds: false,
+			aircraftCount: 0
+		});
+		expect(planet.layers.clouds).toBeNull();
+		expect(planet.layers.aircraft).toBeNull();
+		expect(planet.aircraftCount).toBe(0);
+		planet.dispose();
+	});
+
+	it('places man-made land and sea structures from explicit descriptors', () => {
+		const planet = generatePlanet({
+			seed: 314,
+			detail: 5,
+			objectDensity: 0,
+			seaLevel: 0.53,
+			aircraftCount: 0,
+			placeables: [
+				{ kind: 'settlement', direction: [0, 1, 0], scale: 1.1 },
+				{ kind: 'commsTower', direction: [1, 0, 0], scale: 1 },
+				{ kind: 'lighthouse', direction: [0, 0, 1], scale: 1 },
+				{ kind: 'offshorePlatform', direction: [0, -1, 0], scale: 1 },
+				{ kind: 'ship', direction: [-1, 0, 0], scale: 0.9 }
+			]
+		});
+		expect(planet.objectCounts.settlement).toBe(1);
+		expect(planet.objectCounts.commsTower).toBe(1);
+		expect(planet.objectCounts.lighthouse).toBe(1);
+		expect(planet.objectCounts.offshorePlatform).toBe(1);
+		expect(planet.objectCounts.ship).toBe(1);
 		planet.dispose();
 	});
 
 	it('builds inland water overlays when hydrology produces lakes or rivers', () => {
 		// Higher detail increases chance of hydrology features under the default land bias.
 		const planet = generatePlanet({ seed: 2024, detail: 12, seaLevel: 0.53, objectDensity: 0.2 });
-		const hasInlandBiome =
-			planet.biomes.includes('lake') || planet.biomes.includes('river');
+		const hasInlandBiome = planet.biomes.includes('lake') || planet.biomes.includes('river');
 		if (hasInlandBiome) {
 			expect(planet.layers.lakes !== null || planet.layers.rivers !== null).toBe(true);
 		}

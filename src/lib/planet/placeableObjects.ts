@@ -1,4 +1,5 @@
 import {
+	BoxGeometry,
 	BufferAttribute,
 	BufferGeometry,
 	ConeGeometry,
@@ -15,6 +16,8 @@ import {
 import { type BiomeKind } from './biomes';
 import { planetConfig } from './planetConfig';
 
+export type PlaceableDomain = 'land' | 'coast' | 'ocean';
+
 export type PlaceableKind =
 	| 'broadleafTree'
 	| 'coniferTree'
@@ -26,7 +29,12 @@ export type PlaceableKind =
 	| 'mountainBoulder'
 	| 'iceSpire'
 	| 'coastalDriftwood'
-	| 'coastalRock';
+	| 'coastalRock'
+	| 'settlement'
+	| 'commsTower'
+	| 'lighthouse'
+	| 'offshorePlatform'
+	| 'ship';
 
 /** Explicit placement relative to a unit-sphere surface direction. */
 export type PlaceableDescriptor = {
@@ -48,6 +56,8 @@ export type SurfacePoint = {
 	elevation: number;
 	slope: number;
 	mountain: number;
+	/** Placement domain — land/coast use terrain radius; ocean uses sea radius. */
+	domain: PlaceableDomain;
 };
 
 export type PlacementOptions = {
@@ -68,6 +78,8 @@ export type PlaceableBundle = {
 
 type PlaceableDef = {
 	kind: PlaceableKind;
+	/** Which surface domain this kind samples from. */
+	domain: PlaceableDomain;
 	createGeometry: () => BufferGeometry;
 	/** Flat color when not using vertex colors. */
 	color: number;
@@ -275,6 +287,115 @@ export function createCoastalRockGeometry(): BufferGeometry {
 	return rock;
 }
 
+export function createSettlementGeometry(): BufferGeometry {
+	const m = planetConfig.objects.mesh.settlement;
+	const c = planetConfig.objects.colors;
+	const base = new BoxGeometry(m.baseW, m.baseH, m.baseD);
+	base.translate(0, m.baseY, 0);
+	const mid = new BoxGeometry(m.midW, m.midH, m.midD);
+	mid.translate(-0.008, m.midY, 0.004);
+	const roof = new BoxGeometry(m.roofW, m.roofH, m.roofD);
+	roof.translate(-0.008, m.roofY, 0.004);
+	const tower = new BoxGeometry(m.towerW, m.towerH, m.towerD);
+	tower.translate(m.towerX, m.towerY, -0.006);
+	return mergeGeometries(
+		[base, mid, roof, tower],
+		[c.settlementWall, c.settlementWall, c.settlementRoof, c.settlementAccent]
+	);
+}
+
+export function createCommsTowerGeometry(): BufferGeometry {
+	const m = planetConfig.objects.mesh.commsTower;
+	const c = planetConfig.objects.colors;
+	const base = new BoxGeometry(m.baseW, m.baseH, m.baseW);
+	base.translate(0, m.baseY, 0);
+	const mast = new CylinderGeometry(m.mastRadius * 0.7, m.mastRadius, m.mastHeight, 5);
+	mast.translate(0, m.mastY, 0);
+	const arm = new CylinderGeometry(m.mastRadius * 0.5, m.mastRadius * 0.5, m.crossArm, 4);
+	arm.rotateZ(Math.PI / 2);
+	arm.translate(0, m.crossY, 0);
+	const dish = new SphereGeometry(m.dishRadius, 6, 4);
+	dish.scale(1, 0.35, 1);
+	dish.rotateX(m.dishTilt);
+	dish.translate(m.crossArm * 0.35, m.dishY, 0);
+	return mergeGeometries(
+		[base, mast, arm, dish],
+		[c.commsTowerBody, c.commsTowerBody, c.commsTowerBody, c.commsTowerDish]
+	);
+}
+
+export function createLighthouseGeometry(): BufferGeometry {
+	const m = planetConfig.objects.mesh.lighthouse;
+	const c = planetConfig.objects.colors;
+	const base = new CylinderGeometry(m.baseRadius, m.baseRadius * 1.15, m.baseHeight, 6);
+	base.translate(0, m.baseY, 0);
+	const shaft = new CylinderGeometry(m.shaftTop, m.shaftBottom, m.shaftHeight, 6);
+	shaft.translate(0, m.shaftY, 0);
+	const lantern = new CylinderGeometry(m.lanternRadius, m.lanternRadius, m.lanternHeight, 6);
+	lantern.translate(0, m.lanternY, 0);
+	const cap = new ConeGeometry(m.capRadius, m.capHeight, 6);
+	cap.translate(0, m.capY, 0);
+	return mergeGeometries(
+		[base, shaft, lantern, cap],
+		[c.lighthouseBase, c.lighthouseStripe, c.lighthouseLantern, c.lighthouseBase]
+	);
+}
+
+export function createOffshorePlatformGeometry(): BufferGeometry {
+	const m = planetConfig.objects.mesh.offshorePlatform;
+	const c = planetConfig.objects.colors;
+	const deck = new BoxGeometry(m.deckW, m.deckH, m.deckD);
+	deck.translate(0, m.deckY, 0);
+	const legs: BufferGeometry[] = [];
+	const offsets: Array<[number, number]> = [
+		[m.legSpread, m.legSpread],
+		[m.legSpread, -m.legSpread],
+		[-m.legSpread, m.legSpread],
+		[-m.legSpread, -m.legSpread]
+	];
+	for (const [ox, oz] of offsets) {
+		const leg = new CylinderGeometry(m.legRadius, m.legRadius * 1.1, m.legHeight, 4);
+		leg.translate(ox, m.legHeight * 0.5, oz);
+		legs.push(leg);
+	}
+	const craneMast = new CylinderGeometry(m.legRadius * 0.9, m.legRadius, m.craneMastH, 4);
+	craneMast.translate(m.legSpread * 0.5, m.craneMastY, 0);
+	const craneArm = new BoxGeometry(m.craneArmL, m.legRadius * 1.2, m.legRadius * 1.2);
+	craneArm.translate(m.legSpread * 0.5 + m.craneArmL * 0.35, m.craneArmY, 0);
+	return mergeGeometries(
+		[deck, ...legs, craneMast, craneArm],
+		[
+			c.platformDeck,
+			c.platformLeg,
+			c.platformLeg,
+			c.platformLeg,
+			c.platformLeg,
+			c.platformCrane,
+			c.platformCrane
+		]
+	);
+}
+
+export function createShipGeometry(): BufferGeometry {
+	const m = planetConfig.objects.mesh.ship;
+	const c = planetConfig.objects.colors;
+	const hull = new BoxGeometry(m.hullL, m.hullH, m.hullW);
+	hull.translate(0, m.hullY, 0);
+	const bow = new ConeGeometry(m.hullW * 0.55, m.hullL * 0.28, 4);
+	bow.rotateZ(-Math.PI / 2);
+	bow.translate(m.hullL * 0.42, m.hullY, 0);
+	const deck = new BoxGeometry(m.deckL, m.deckH, m.deckW);
+	deck.translate(-0.004, m.deckY, 0);
+	const bridge = new BoxGeometry(m.bridgeL, m.bridgeH, m.bridgeW);
+	bridge.translate(-0.01, m.bridgeY, 0);
+	const funnel = new CylinderGeometry(m.funnelR, m.funnelR * 1.1, m.funnelH, 5);
+	funnel.translate(0.006, m.funnelY, 0);
+	return mergeGeometries(
+		[hull, bow, deck, bridge, funnel],
+		[c.shipHull, c.shipHull, c.shipDeck, c.shipBridge, c.shipHull]
+	);
+}
+
 const p = () => planetConfig.objects.placement;
 
 export function canPlaceBroadleafTree(point: SurfacePoint): boolean {
@@ -325,6 +446,35 @@ export function canPlaceCoastalRock(point: SurfacePoint): boolean {
 	return point.elevation <= p().coastMaxElevation && point.slope < p().coastMaxSlope;
 }
 
+export function canPlaceSettlement(point: SurfacePoint): boolean {
+	return (
+		point.slope < p().structureMaxSlope &&
+		point.elevation > p().structureMinElevation &&
+		point.mountain < p().structureMaxMountain
+	);
+}
+
+export function canPlaceCommsTower(point: SurfacePoint): boolean {
+	return (
+		point.slope < p().towerMaxSlope &&
+		point.elevation > p().towerMinElevation &&
+		point.mountain < p().structureMaxMountain
+	);
+}
+
+export function canPlaceLighthouse(point: SurfacePoint): boolean {
+	return point.elevation <= p().lighthouseMaxElevation && point.slope < p().lighthouseMaxSlope;
+}
+
+export function canPlaceOffshorePlatform(point: SurfacePoint): boolean {
+	// elevation is seaLevel - height for ocean points (depth below sea).
+	return point.elevation >= 0 && point.elevation <= p().oceanMaxDepth && point.slope < 0.85;
+}
+
+export function canPlaceShip(point: SurfacePoint): boolean {
+	return point.elevation >= 0 && point.elevation <= p().shipMaxDepth && point.slope < 0.9;
+}
+
 /** Legacy helper: tree terrain + vegetated biomes. Prefer registry. */
 export function canPlaceTree(point: SurfacePoint): boolean {
 	return (
@@ -363,6 +513,7 @@ function buildRegistry(): PlaceableDef[] {
 	return [
 		{
 			kind: 'broadleafTree',
+			domain: 'land',
 			createGeometry: createBroadleafTreeGeometry,
 			color: 0xffffff,
 			vertexColors: true,
@@ -375,6 +526,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'coniferTree',
+			domain: 'land',
 			createGeometry: createConiferTreeGeometry,
 			color: 0xffffff,
 			vertexColors: true,
@@ -387,6 +539,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'tropicalTree',
+			domain: 'land',
 			createGeometry: createTropicalTreeGeometry,
 			color: 0xffffff,
 			vertexColors: true,
@@ -399,6 +552,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'cactus',
+			domain: 'land',
 			createGeometry: createCactusGeometry,
 			color: c.cactus,
 			lift: o.lift.cactus,
@@ -410,6 +564,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'savannaShrub',
+			domain: 'land',
 			createGeometry: createSavannaShrubGeometry,
 			color: c.savannaShrub,
 			lift: o.lift.savannaShrub,
@@ -421,6 +576,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'grassShrub',
+			domain: 'land',
 			createGeometry: createGrassShrubGeometry,
 			color: c.grassShrub,
 			lift: o.lift.grassShrub,
@@ -432,6 +588,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'boulder',
+			domain: 'land',
 			createGeometry: createBoulderGeometry,
 			color: c.boulder,
 			lift: o.lift.boulder,
@@ -449,6 +606,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'mountainBoulder',
+			domain: 'land',
 			createGeometry: createMountainBoulderGeometry,
 			color: c.mountainBoulder,
 			lift: o.lift.mountainBoulder,
@@ -460,6 +618,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'iceSpire',
+			domain: 'land',
 			createGeometry: createIceSpireGeometry,
 			color: c.iceSpire,
 			lift: o.lift.iceSpire,
@@ -471,6 +630,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'coastalDriftwood',
+			domain: 'coast',
 			createGeometry: createCoastalDriftwoodGeometry,
 			color: c.coastalDriftwood,
 			lift: o.lift.coastalDriftwood,
@@ -482,6 +642,7 @@ function buildRegistry(): PlaceableDef[] {
 		},
 		{
 			kind: 'coastalRock',
+			domain: 'coast',
 			createGeometry: createCoastalRockGeometry,
 			color: c.coastalRock,
 			lift: o.lift.coastalRock,
@@ -490,6 +651,85 @@ function buildRegistry(): PlaceableDef[] {
 			maxCount: o.maxCounts.coastalRock,
 			biomeWeight: { beach: 0.85 },
 			canPlace: canPlaceCoastalRock
+		},
+		{
+			kind: 'settlement',
+			domain: 'land',
+			createGeometry: createSettlementGeometry,
+			color: 0xffffff,
+			vertexColors: true,
+			lift: o.lift.settlement,
+			scale: o.scale.settlement,
+			chance: o.chance.settlement,
+			maxCount: o.maxCounts.settlement,
+			biomeWeight: {
+				grassland: 1,
+				forest: 0.55,
+				savanna: 0.7,
+				desert: 0.35,
+				taiga: 0.4,
+				tundra: 0.25
+			},
+			canPlace: canPlaceSettlement
+		},
+		{
+			kind: 'commsTower',
+			domain: 'land',
+			createGeometry: createCommsTowerGeometry,
+			color: 0xffffff,
+			vertexColors: true,
+			lift: o.lift.commsTower,
+			scale: o.scale.commsTower,
+			chance: o.chance.commsTower,
+			maxCount: o.maxCounts.commsTower,
+			biomeWeight: {
+				grassland: 0.7,
+				rock: 1,
+				mountain: 0.85,
+				desert: 0.55,
+				tundra: 0.5,
+				alpine: 0.4
+			},
+			canPlace: canPlaceCommsTower
+		},
+		{
+			kind: 'lighthouse',
+			domain: 'coast',
+			createGeometry: createLighthouseGeometry,
+			color: 0xffffff,
+			vertexColors: true,
+			lift: o.lift.lighthouse,
+			scale: o.scale.lighthouse,
+			chance: o.chance.lighthouse,
+			maxCount: o.maxCounts.lighthouse,
+			biomeWeight: { beach: 1 },
+			canPlace: canPlaceLighthouse
+		},
+		{
+			kind: 'offshorePlatform',
+			domain: 'ocean',
+			createGeometry: createOffshorePlatformGeometry,
+			color: 0xffffff,
+			vertexColors: true,
+			lift: o.lift.offshorePlatform,
+			scale: o.scale.offshorePlatform,
+			chance: o.chance.offshorePlatform,
+			maxCount: o.maxCounts.offshorePlatform,
+			biomeWeight: { shallow: 1, deepOcean: 0.45 },
+			canPlace: canPlaceOffshorePlatform
+		},
+		{
+			kind: 'ship',
+			domain: 'ocean',
+			createGeometry: createShipGeometry,
+			color: 0xffffff,
+			vertexColors: true,
+			lift: o.lift.ship,
+			scale: o.scale.ship,
+			chance: o.chance.ship,
+			maxCount: o.maxCounts.ship,
+			biomeWeight: { shallow: 1, deepOcean: 0.65 },
+			canPlace: canPlaceShip
 		}
 	];
 }
@@ -505,7 +745,12 @@ export const PLACEABLE_KINDS: PlaceableKind[] = [
 	'mountainBoulder',
 	'iceSpire',
 	'coastalDriftwood',
-	'coastalRock'
+	'coastalRock',
+	'settlement',
+	'commsTower',
+	'lighthouse',
+	'offshorePlatform',
+	'ship'
 ];
 
 export function emptyPlaceableCounts(): PlaceableCounts {
@@ -518,21 +763,33 @@ export function getPlaceableRegistry(): PlaceableDef[] {
 	return buildRegistry();
 }
 
+export function getPlaceableDomain(kind: PlaceableKind): PlaceableDomain {
+	const def = getPlaceableRegistry().find((d) => d.kind === kind);
+	return def?.domain ?? 'land';
+}
+
 function normalizeDirection(x: number, y: number, z: number): Vector3 {
 	const len = Math.hypot(x, y, z) || 1;
 	return new Vector3(x / len, y / len, z / len);
 }
 
-function findNearestSurface(points: SurfacePoint[], dir: Vector3): SurfacePoint | null {
+function findNearestSurface(
+	points: SurfacePoint[],
+	dir: Vector3,
+	domain?: PlaceableDomain
+): SurfacePoint | null {
 	let best: SurfacePoint | null = null;
 	let bestDot = -2;
 	for (const pnt of points) {
+		if (domain && pnt.domain !== domain) continue;
 		const dot = pnt.dirX * dir.x + pnt.dirY * dir.y + pnt.dirZ * dir.z;
 		if (dot > bestDot) {
 			bestDot = dot;
 			best = pnt;
 		}
 	}
+	// Fallback without domain filter if nothing matched (explicit descriptors).
+	if (!best && domain) return findNearestSurface(points, dir);
 	return best;
 }
 
@@ -581,6 +838,7 @@ export function placeObjects(
 		const maxCount = Math.floor((options.maxCounts?.[def.kind] ?? def.maxCount) * density);
 		const candidates: SurfacePoint[] = [];
 		for (const point of points) {
+			if (point.domain !== def.domain) continue;
 			const weight = def.biomeWeight[point.biome] ?? 0;
 			if (weight <= 0) continue;
 			if (!def.canPlace(point)) continue;
@@ -610,7 +868,8 @@ export function placeObjects(
 
 	for (const desc of options.explicit ?? []) {
 		const dir = normalizeDirection(desc.direction[0], desc.direction[1], desc.direction[2]);
-		const nearest = findNearestSurface(points, dir);
+		const domain = getPlaceableDomain(desc.kind);
+		const nearest = findNearestSurface(points, dir, domain);
 		if (!nearest) continue;
 		const entry: PlacedItem = {
 			point: {
@@ -618,7 +877,8 @@ export function placeObjects(
 				dirX: dir.x,
 				dirY: dir.y,
 				dirZ: dir.z,
-				radius: nearest.radius
+				radius: nearest.radius,
+				domain
 			},
 			scale: desc.scale ?? 1,
 			yaw: desc.rotation ?? 0,

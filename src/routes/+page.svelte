@@ -22,9 +22,9 @@
 
 <PlanetBackdrop />
 
-<div class="relative z-10">
-	<section class="mb-16 grid items-start gap-10 md:grid-cols-[1fr_auto]">
-		<div class="motion-stagger space-y-4">
+<div class="relative z-10 flex flex-col gap-24 md:gap-32">
+	<section class="grid items-start gap-10 md:grid-cols-[1fr_auto]">
+		<div class="panel motion-stagger space-y-4 p-6 md:p-8">
 			<p class="chip w-fit">{site.tagline}</p>
 			<h1 class="text-text text-4xl font-semibold tracking-tight md:text-5xl">
 				Hi, I’m {site.name}
@@ -46,7 +46,7 @@
 	</section>
 
 	<section
-		class="panel-glow panel-glow-pulse motion-fade-up motion-delay-2 mb-16 overflow-hidden p-6 md:p-8"
+		class="panel-glow panel-glow-pulse motion-fade-up motion-delay-2 overflow-hidden p-6 md:p-8"
 		aria-labelledby="gildenkrieg-heading"
 	>
 		<div class="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">

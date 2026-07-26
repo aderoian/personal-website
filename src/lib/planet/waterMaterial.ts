@@ -5,6 +5,7 @@ export type WaterUniforms = {
 	uDeepColor: IUniform<Color>;
 	uShallowColor: IUniform<Color>;
 	uSpecularColor: IUniform<Color>;
+	uFoamColor: IUniform<Color>;
 	uLightDir: IUniform<[number, number, number]>;
 	uTime: IUniform<number>;
 	uFresnelPower: IUniform<number>;
@@ -16,12 +17,18 @@ export type WaterUniforms = {
 	uWaveSpeed: IUniform<number>;
 	uWaveScale: IUniform<number>;
 	uDepthMix: IUniform<number>;
+	uFoamStrength: IUniform<number>;
+	uFoamWidth: IUniform<number>;
+	uFoamSpeed: IUniform<number>;
+	uFoamNoiseScale: IUniform<number>;
+	uOceanFoam: IUniform<number>;
 };
 
 export type WaterMaterialOptions = {
 	deepColor?: string;
 	shallowColor?: string;
 	specularColor?: string;
+	foamColor?: string;
 	opacity?: number;
 	waveStrength?: number;
 	waveSpeed?: number;
@@ -31,6 +38,11 @@ export type WaterMaterialOptions = {
 	specularStrength?: number;
 	specularPower?: number;
 	depthMix?: number;
+	foamStrength?: number;
+	foamWidth?: number;
+	foamSpeed?: number;
+	foamNoiseScale?: number;
+	oceanFoam?: number;
 };
 
 export type WaterMaterialBundle = {
@@ -41,15 +53,17 @@ export type WaterMaterialBundle = {
 };
 
 /**
- * Grounded low-poly water: Fresnel rim, soft specular, subtle procedural normals.
- * Used for ocean sphere and inland lake/river face meshes.
+ * Grounded low-poly water: Fresnel rim, soft specular, subtle procedural normals,
+ * and shore foam (`aEdge` inland; `aCoast` ocean shoreline from terrain).
  */
 export function createWaterMaterial(options: WaterMaterialOptions = {}): WaterMaterialBundle {
 	const w = planetConfig.water;
+	const foam = w.foam;
 	const uniforms: WaterUniforms = {
 		uDeepColor: { value: new Color(options.deepColor ?? w.deepColor) },
 		uShallowColor: { value: new Color(options.shallowColor ?? w.shallowColor) },
 		uSpecularColor: { value: new Color(options.specularColor ?? w.specularColor) },
+		uFoamColor: { value: new Color(options.foamColor ?? foam.color) },
 		uLightDir: { value: [0.55, 0.7, 0.45] },
 		uTime: { value: 0 },
 		uFresnelPower: { value: options.fresnelPower ?? w.fresnelPower },
@@ -60,7 +74,12 @@ export function createWaterMaterial(options: WaterMaterialOptions = {}): WaterMa
 		uWaveStrength: { value: options.waveStrength ?? w.waveStrength },
 		uWaveSpeed: { value: options.waveSpeed ?? w.waveSpeed },
 		uWaveScale: { value: options.waveScale ?? w.waveScale },
-		uDepthMix: { value: options.depthMix ?? w.depthMix }
+		uDepthMix: { value: options.depthMix ?? w.depthMix },
+		uFoamStrength: { value: options.foamStrength ?? foam.strength },
+		uFoamWidth: { value: options.foamWidth ?? foam.width },
+		uFoamSpeed: { value: options.foamSpeed ?? foam.speed },
+		uFoamNoiseScale: { value: options.foamNoiseScale ?? foam.noiseScale },
+		uOceanFoam: { value: options.oceanFoam ?? foam.oceanCoast }
 	};
 
 	const material = new ShaderMaterial({
@@ -68,10 +87,15 @@ export function createWaterMaterial(options: WaterMaterialOptions = {}): WaterMa
 		depthWrite: false,
 		uniforms,
 		vertexShader: /* glsl */ `
+			attribute float aEdge;
+			attribute float aCoast;
+
 			varying vec3 vWorldPos;
 			varying vec3 vWorldNormal;
 			varying vec3 vViewDir;
 			varying vec3 vLocalPos;
+			varying float vEdge;
+			varying float vCoast;
 
 			void main() {
 				vec4 world = modelMatrix * vec4(position, 1.0);
@@ -79,6 +103,8 @@ export function createWaterMaterial(options: WaterMaterialOptions = {}): WaterMa
 				vLocalPos = position;
 				vWorldNormal = normalize(mat3(modelMatrix) * normal);
 				vViewDir = normalize(cameraPosition - world.xyz);
+				vEdge = aEdge;
+				vCoast = aCoast;
 				gl_Position = projectionMatrix * viewMatrix * world;
 			}
 		`,
@@ -86,6 +112,7 @@ export function createWaterMaterial(options: WaterMaterialOptions = {}): WaterMa
 			uniform vec3 uDeepColor;
 			uniform vec3 uShallowColor;
 			uniform vec3 uSpecularColor;
+			uniform vec3 uFoamColor;
 			uniform vec3 uLightDir;
 			uniform float uTime;
 			uniform float uFresnelPower;
@@ -97,11 +124,18 @@ export function createWaterMaterial(options: WaterMaterialOptions = {}): WaterMa
 			uniform float uWaveSpeed;
 			uniform float uWaveScale;
 			uniform float uDepthMix;
+			uniform float uFoamStrength;
+			uniform float uFoamWidth;
+			uniform float uFoamSpeed;
+			uniform float uFoamNoiseScale;
+			uniform float uOceanFoam;
 
 			varying vec3 vWorldPos;
 			varying vec3 vWorldNormal;
 			varying vec3 vViewDir;
 			varying vec3 vLocalPos;
+			varying float vEdge;
+			varying float vCoast;
 
 			void main() {
 				vec3 N = normalize(vWorldNormal);
@@ -130,12 +164,43 @@ export function createWaterMaterial(options: WaterMaterialOptions = {}): WaterMa
 				float spec = pow(max(dot(N, H), 0.0), uSpecularPower) * uSpecularStrength * ndotl;
 
 				vec3 color = base * (0.45 + 0.55 * ndotl) + uSpecularColor * spec;
-				float alpha = clamp(uOpacity * (0.55 + 0.45 * fresnel), 0.0, 0.95);
+
+				// Shore foam: inland uses aEdge; ocean uses terrain-derived aCoast.
+				float foamPulse = 0.55 + 0.45 * sin(
+					lp.x * uFoamNoiseScale + lp.z * uFoamNoiseScale * 0.7 + uTime * uFoamSpeed
+				);
+				foamPulse *= 0.7 + 0.3 * cos(
+					lp.y * uFoamNoiseScale * 1.15 - uTime * uFoamSpeed * 0.85
+				);
+				float edgeFoam = pow(clamp(vEdge, 0.0, 1.0), uFoamWidth);
+				float coastFoam = pow(clamp(vCoast, 0.0, 1.0), max(uFoamWidth * 0.85, 1.0)) * uOceanFoam;
+				float foamMask = max(edgeFoam, coastFoam) * foamPulse * uFoamStrength;
+				foamMask = clamp(foamMask, 0.0, 0.88);
+
+				color = mix(color, uFoamColor, foamMask);
+
+				// More opaque toward the limb so grazing ocean doesn't punch a hole through to space;
+				// atmosphere haze then wraps outside that silhouette. Foam also seals transparent edges.
+				float limbSolid = pow(1.0 - ndotv, 1.6);
+				float alpha = clamp(
+					uOpacity * (0.62 + 0.28 * fresnel) + limbSolid * 0.32 + foamMask * 0.4,
+					0.0,
+					0.98
+				);
 
 				gl_FragColor = vec4(color, alpha);
 			}
 		`
 	});
+
+	// Defaults when a mesh omits these buffers (ocean has aCoast; inland has aEdge).
+	// Three's typings only list color/uv/uv1; ShaderMaterial accepts custom defaults at runtime.
+	const defaults = material.defaultAttributeValues as typeof material.defaultAttributeValues & {
+		aEdge: [number];
+		aCoast: [number];
+	};
+	defaults.aEdge = [0];
+	defaults.aCoast = [0];
 
 	return {
 		material,
@@ -148,7 +213,7 @@ export function createWaterMaterial(options: WaterMaterialOptions = {}): WaterMa
 	};
 }
 
-/** Preset for inland lakes. */
+/** Preset for inland lakes — calm and matte. */
 export function createLakeWaterMaterial(): WaterMaterialBundle {
 	const lake = planetConfig.water.lake;
 	return createWaterMaterial({
@@ -157,11 +222,18 @@ export function createLakeWaterMaterial(): WaterMaterialBundle {
 		opacity: lake.opacity,
 		waveScale: lake.waveScale,
 		waveStrength: lake.waveStrength,
-		waveSpeed: lake.waveSpeed
+		waveSpeed: lake.waveSpeed,
+		specularStrength: lake.specularStrength,
+		specularPower: lake.specularPower,
+		fresnelPower: lake.fresnelPower,
+		fresnelBias: lake.fresnelBias,
+		foamStrength: lake.foamStrength,
+		foamWidth: lake.foamWidth,
+		oceanFoam: 0
 	});
 }
 
-/** Preset for rivers (slightly faster, tighter ripples). */
+/** Preset for rivers — subtle ripples, restrained gloss. */
 export function createRiverWaterMaterial(): WaterMaterialBundle {
 	const river = planetConfig.water.river;
 	return createWaterMaterial({
@@ -170,6 +242,13 @@ export function createRiverWaterMaterial(): WaterMaterialBundle {
 		opacity: river.opacity,
 		waveScale: river.waveScale,
 		waveStrength: river.waveStrength,
-		waveSpeed: river.waveSpeed
+		waveSpeed: river.waveSpeed,
+		specularStrength: river.specularStrength,
+		specularPower: river.specularPower,
+		fresnelPower: river.fresnelPower,
+		fresnelBias: river.fresnelBias,
+		foamStrength: river.foamStrength,
+		foamWidth: river.foamWidth,
+		oceanFoam: 0
 	});
 }
