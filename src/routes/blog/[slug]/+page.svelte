@@ -17,7 +17,7 @@
 	}}
 />
 
-<article>
+<article class="panel mx-auto max-w-4xl !bg-bg-elevated p-6 md:p-10 backdrop-blur-none">
 	<header class="border-border mb-8 border-b pb-8">
 		<p class="mb-2 text-sm">
 			<a href="/blog" class="text-accent font-mono">← Blog</a>
