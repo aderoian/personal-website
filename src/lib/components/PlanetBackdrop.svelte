@@ -71,10 +71,26 @@
 			renderer.render(scene, camera);
 		};
 
+		// Mobile browsers change the visual viewport as chrome shows/hides while
+		// position:fixed + inset:0 still tracks the layout viewport — pin the
+		// canvas to visualViewport so the planet stays centered while scrolling.
+		let lastW = 0;
+		let lastH = 0;
 		const resize = () => {
-			const w = host.clientWidth;
-			const h = host.clientHeight;
-			if (w < 2 || h < 2) return;
+			const vv = window.visualViewport;
+			const w = Math.max(1, Math.round(vv?.width ?? window.innerWidth));
+			const h = Math.max(1, Math.round(vv?.height ?? window.innerHeight));
+			const top = Math.round(vv?.offsetTop ?? 0);
+			const left = Math.round(vv?.offsetLeft ?? 0);
+
+			host.style.top = `${top}px`;
+			host.style.left = `${left}px`;
+			host.style.width = `${w}px`;
+			host.style.height = `${h}px`;
+
+			if (w === lastW && h === lastH) return;
+			lastW = w;
+			lastH = h;
 			camera.aspect = w / h;
 			camera.updateProjectionMatrix();
 			renderer.setSize(w, h, false);
@@ -167,8 +183,11 @@
 			});
 		});
 
-		const ro = new ResizeObserver(resize);
-		ro.observe(host);
+		const vv = window.visualViewport;
+		vv?.addEventListener('resize', resize);
+		vv?.addEventListener('scroll', resize);
+		window.addEventListener('resize', resize);
+		window.addEventListener('orientationchange', resize);
 		window.addEventListener('visibilitychange', onVisibility);
 
 		return () => {
@@ -181,7 +200,10 @@
 				if (typeof cic === 'function') cic(idleHandle);
 			}
 			if (deferTimer !== null) clearTimeout(deferTimer);
-			ro.disconnect();
+			vv?.removeEventListener('resize', resize);
+			vv?.removeEventListener('scroll', resize);
+			window.removeEventListener('resize', resize);
+			window.removeEventListener('orientationchange', resize);
 			window.removeEventListener('visibilitychange', onVisibility);
 			disposePlanet();
 			renderer.dispose();
@@ -205,7 +227,12 @@
 	.planet-backdrop {
 		pointer-events: none;
 		position: fixed;
-		inset: 0;
+		top: 0;
+		left: 0;
+		/* Fallback before JS measures visualViewport; dvh tracks mobile chrome. */
+		width: 100%;
+		height: 100vh;
+		height: 100dvh;
 		z-index: 0;
 		overflow: hidden;
 		opacity: var(--planet-opacity-desktop, 0.78);
