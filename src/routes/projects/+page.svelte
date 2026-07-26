@@ -25,7 +25,7 @@
 {#if data.projects.length === 0}
 	<EmptyState message="No projects yet." />
 {:else}
-	<ul class="grid gap-6 sm:grid-cols-2">
+	<ul class="motion-stagger grid gap-6 sm:grid-cols-2">
 		{#each data.projects as project (project.slug)}
 			<li>
 				<ProjectCard {project} headingLevel={2} />

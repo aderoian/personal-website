@@ -12,9 +12,7 @@
 	const image = $derived(toAssetUrl(projectEffectiveImage(project)));
 </script>
 
-<article
-	class="panel-glow group flex h-full flex-col overflow-hidden transition-transform duration-200 hover:-translate-y-0.5"
->
+<article class="panel-glow card-lift group flex h-full flex-col overflow-hidden">
 	<a
 		href="/project/{project.slug}"
 		class="border-border bg-bg-elevated relative block aspect-video overflow-hidden border-b"
@@ -25,7 +23,7 @@
 			width="640"
 			height="360"
 			loading="lazy"
-			class="h-full w-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
+			class="h-full w-full object-cover opacity-90 transition-transform duration-500 ease-out group-hover:scale-[1.03] group-hover:opacity-100"
 		/>
 		<div
 			class="from-bg-panel/80 pointer-events-none absolute inset-0 bg-gradient-to-t via-transparent to-transparent"

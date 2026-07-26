@@ -20,7 +20,7 @@
 	<div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
 		<a href="/" class="group text-text hover:text-accent flex items-center gap-2 no-underline">
 			<span
-				class="border-accent/40 bg-bg-elevated text-accent flex h-8 w-8 items-center justify-center rounded border font-mono text-xs"
+				class="border-accent/40 bg-bg-elevated text-accent flex h-8 w-8 items-center justify-center rounded border font-mono text-xs transition-transform duration-300 group-hover:scale-105"
 				aria-hidden="true"
 			>
 				AD
@@ -35,7 +35,7 @@
 						<li>
 							<a
 								href={item.href}
-								class="rounded px-3 py-2 text-sm transition-colors {isActive(item.href)
+								class="nav-link rounded px-3 py-2 text-sm {isActive(item.href)
 									? 'bg-accent/10 text-accent'
 									: 'text-text-muted hover:text-text'}"
 								aria-current={isActive(item.href) ? 'page' : undefined}
@@ -76,15 +76,19 @@
 	</div>
 
 	{#if mobileOpen}
-		<nav id="mobile-nav" class="border-border border-t md:hidden" aria-label="Mobile">
+		<nav
+			id="mobile-nav"
+			class="mobile-nav-enter border-border border-t md:hidden"
+			aria-label="Mobile"
+		>
 			<ul class="mx-auto max-w-6xl px-4 py-2">
 				{#each navItems as item (item.id)}
 					<li>
 						<a
 							href={item.href}
-							class="block rounded px-3 py-3 text-sm {isActive(item.href)
+							class="block rounded px-3 py-3 text-sm transition-colors {isActive(item.href)
 								? 'bg-accent/10 text-accent'
-								: 'text-text-muted'}"
+								: 'text-text-muted hover:text-text'}"
 							aria-current={isActive(item.href) ? 'page' : undefined}
 							onclick={closeMobile}
 						>

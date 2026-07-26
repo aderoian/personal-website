@@ -24,7 +24,7 @@
 {#if data.posts.length === 0}
 	<EmptyState message="No posts yet." />
 {:else}
-	<ul class="grid gap-6 sm:grid-cols-2">
+	<ul class="motion-stagger grid gap-6 sm:grid-cols-2">
 		{#each data.posts as post (post.slug)}
 			<li>
 				<BlogCard {post} />

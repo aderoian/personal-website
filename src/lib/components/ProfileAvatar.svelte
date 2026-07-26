@@ -9,7 +9,7 @@
 </script>
 
 <div
-	class="border-accent/30 bg-bg-elevated shadow-glow relative mx-auto aspect-square w-44 shrink-0 overflow-hidden rounded-lg border sm:w-56 md:mx-0 md:w-72 lg:w-80 {className}"
+	class="border-accent/30 bg-bg-elevated shadow-glow motion-float relative mx-auto aspect-square w-44 shrink-0 overflow-hidden rounded-lg border sm:w-56 md:mx-0 md:w-72 lg:w-80 {className}"
 >
 	<img
 		src={site.profileImage}

@@ -18,7 +18,7 @@
 	}}
 />
 
-<article>
+<article class="motion-fade-up">
 	<header class="border-border mb-8 border-b pb-8">
 		<p class="mb-2 text-sm">
 			<a href="/projects" class="text-accent font-mono">← Projects</a>

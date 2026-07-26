@@ -20,7 +20,7 @@
 />
 
 <section class="mb-16 grid items-start gap-10 md:grid-cols-[1fr_auto]">
-	<div class="space-y-4">
+	<div class="motion-stagger space-y-4">
 		<p class="chip w-fit">{site.tagline}</p>
 		<h1 class="text-text text-4xl font-semibold tracking-tight md:text-5xl">
 			Hi, I’m {site.name}
@@ -41,7 +41,10 @@
 	<ProfileAvatar />
 </section>
 
-<section class="panel-glow mb-16 overflow-hidden p-6 md:p-8" aria-labelledby="gildenkrieg-heading">
+<section
+	class="panel-glow panel-glow-pulse motion-fade-up motion-delay-2 mb-16 overflow-hidden p-6 md:p-8"
+	aria-labelledby="gildenkrieg-heading"
+>
 	<div class="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
 		<div>
 			<p class="text-accent-secondary mb-2 font-mono text-xs tracking-[0.2em] uppercase">
@@ -94,7 +97,7 @@
 	</div>
 </section>
 
-<section aria-labelledby="featured-heading">
+<section class="motion-fade-up motion-delay-3" aria-labelledby="featured-heading">
 	<div class="border-border mb-6 flex items-end justify-between gap-4 border-b pb-4">
 		<h2 id="featured-heading" class="text-text text-2xl font-semibold">Featured projects</h2>
 		<a href="/projects" class="text-accent text-sm font-medium hover:text-white">View all →</a>
@@ -103,7 +106,7 @@
 	{#if data.featured.length === 0}
 		<EmptyState message="No projects to show yet—check back soon." />
 	{:else}
-		<ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+		<ul class="motion-stagger grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 			{#each data.featured as project (project.slug)}
 				<li>
 					<ProjectCard {project} />

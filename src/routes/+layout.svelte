@@ -2,6 +2,7 @@
 	import '../app.css';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import SiteHeader from '$lib/components/SiteHeader.svelte';
+	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import type { Snippet } from 'svelte';
 
@@ -9,6 +10,23 @@
 	const isAdmin = $derived(
 		page.url.pathname === '/admin' || page.url.pathname.startsWith('/admin/')
 	);
+
+	onNavigate((navigation) => {
+		if (
+			typeof document === 'undefined' ||
+			!document.startViewTransition ||
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		) {
+			return;
+		}
+
+		return new Promise<void>((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 </script>
 
 {#if isAdmin}
@@ -23,7 +41,10 @@
 
 	<div class="flex min-h-screen flex-col">
 		<SiteHeader />
-		<main id="main-content" class="mx-auto w-full max-w-6xl flex-1 px-4 py-10 md:px-6 md:py-14">
+		<main
+			id="main-content"
+			class="motion-fade-up mx-auto w-full max-w-6xl flex-1 px-4 py-10 md:px-6 md:py-14"
+		>
 			{@render children()}
 		</main>
 		<SiteFooter />

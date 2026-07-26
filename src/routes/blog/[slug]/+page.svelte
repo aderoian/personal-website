@@ -17,7 +17,7 @@
 	}}
 />
 
-<article class="panel mx-auto max-w-4xl !bg-bg-elevated p-6 md:p-10 backdrop-blur-none">
+<article class="panel motion-fade-up mx-auto max-w-4xl !bg-bg-elevated p-6 backdrop-blur-none md:p-10">
 	<header class="border-border mb-8 border-b pb-8">
 		<p class="mb-2 text-sm">
 			<a href="/blog" class="text-accent font-mono">← Blog</a>
