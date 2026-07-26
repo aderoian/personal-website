@@ -12,7 +12,7 @@
 	} = $props();
 </script>
 
-<header class="motion-fade-up border-border mb-10 border-b pb-8">
+<header class="panel motion-fade-up mb-10 p-6 md:p-8">
 	<p class="text-accent mb-2 font-mono text-xs tracking-[0.2em] uppercase">// {title}</p>
 	<h1 class="text-text mb-3 text-3xl font-semibold tracking-tight md:text-4xl">{title}</h1>
 	{#if lede}

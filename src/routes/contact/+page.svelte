@@ -25,13 +25,6 @@
 	lede="Questions about a project, collaboration, or something else? I’d be glad to hear from you."
 />
 
-<div class="prose-content motion-fade-up motion-delay-1 mb-8 max-w-2xl">
-	<p>
-		The fastest way to reach me is through the links below. If you’re writing about a specific
-		project, mentioning its name in your message helps me respond with useful context.
-	</p>
-</div>
-
 <section class="panel motion-fade-up motion-delay-2 mb-8 p-6" aria-labelledby="contact-links-heading">
 	<h2
 		id="contact-links-heading"
