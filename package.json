@@ -25,6 +25,7 @@
 		"@tailwindcss/vite": "^4.1.17",
 		"@types/node": "^24.10.1",
 		"@types/nodemailer": "^7.0.4",
+		"@types/three": "^0.185.1",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.13.0",
@@ -45,6 +46,7 @@
 		"isomorphic-dompurify": "^2.33.0",
 		"marked": "^17.0.1",
 		"nodemailer": "^7.0.11",
+		"three": "^0.185.1",
 		"zod": "^4.1.13"
 	}
 }

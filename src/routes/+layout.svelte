@@ -43,7 +43,7 @@
 		<SiteHeader />
 		<main
 			id="main-content"
-			class="motion-fade-up mx-auto w-full max-w-6xl flex-1 px-4 py-10 md:px-6 md:py-14"
+			class="motion-fade-up relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-10 md:px-6 md:py-14"
 		>
 			{@render children()}
 		</main>
