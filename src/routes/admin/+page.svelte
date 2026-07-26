@@ -1,9 +1,51 @@
 <script lang="ts">
+	import AnalyticsBarChart from '$lib/components/admin/AnalyticsBarChart.svelte';
+	import AnalyticsDonutChart from '$lib/components/admin/AnalyticsDonutChart.svelte';
 	import { formatBlogDate } from '$lib/schemas/blog-post';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	const postBars = $derived(
+		data.analytics.posts.map((post) => ({
+			label: post.title,
+			value: post.total,
+			href: `/admin/analytics/${post.slug}`
+		}))
+	);
+
+	const sourceSlices = $derived(
+		data.analytics.sourcesList.map((entry) => ({
+			label: entry.source,
+			value: entry.count
+		}))
+	);
+
+	const viewsBySlug = $derived(
+		new Map(data.analytics.posts.map((post) => [post.slug, post.total]))
+	);
 </script>
+
+<section class="mb-10">
+	<div class="mb-4">
+		<h2 class="text-text text-xl font-semibold">Blog analytics</h2>
+		<p class="text-text-muted text-sm">
+			{data.analytics.total}
+			{data.analytics.total === 1 ? 'view' : 'views'} across all posts
+		</p>
+	</div>
+
+	<div class="grid gap-4 lg:grid-cols-2">
+		<div class="panel p-4 sm:p-5">
+			<h3 class="text-text mb-4 text-sm font-semibold tracking-wide uppercase">Views by post</h3>
+			<AnalyticsBarChart items={postBars} emptyLabel="No blog views recorded yet." />
+		</div>
+		<div class="panel p-4 sm:p-5">
+			<h3 class="text-text mb-4 text-sm font-semibold tracking-wide uppercase">Traffic by source</h3>
+			<AnalyticsDonutChart slices={sourceSlices} emptyLabel="No blog views recorded yet." />
+		</div>
+	</div>
+</section>
 
 <section class="mb-10">
 	<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
@@ -63,7 +105,9 @@
 							{post.title}
 						</a>
 						<p class="text-text-muted font-mono text-xs">
-							{post.slug} · {formatBlogDate(post.published_at)}
+							{post.slug} · {formatBlogDate(post.published_at)} ·
+							{viewsBySlug.get(post.slug) ?? 0}
+							{(viewsBySlug.get(post.slug) ?? 0) === 1 ? 'view' : 'views'}
 						</p>
 					</div>
 					<div class="flex flex-wrap items-center gap-2">
@@ -75,6 +119,7 @@
 								{post.published ? 'Unpublish' : 'Publish'}
 							</button>
 						</form>
+						<a href="/admin/analytics/{post.slug}" class="btn px-3 py-1 text-xs">Analytics</a>
 						<a href="/admin/blog/{post.slug}" class="btn px-3 py-1 text-xs">Edit</a>
 					</div>
 				</li>
