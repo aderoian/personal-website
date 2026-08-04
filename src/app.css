@@ -79,6 +79,9 @@ html[data-theme='light'] {
 @layer base {
 	html {
 		@apply scroll-smooth;
+		/* Keep layout width stable and center content to the window, not the
+		   area excluding a classic right-side scrollbar. */
+		scrollbar-gutter: stable both-edges;
 	}
 
 	body {
