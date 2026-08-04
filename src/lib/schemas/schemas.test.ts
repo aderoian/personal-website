@@ -8,9 +8,12 @@ import {
 } from '$lib/schemas/project';
 import {
 	blogPostSchema,
+	collectBlogTags,
 	formatBlogDate,
 	isBlogPostPubliclyVisible,
+	matchesBlogSearch,
 	publishedBlogPosts,
+	resolveContinuedReading,
 	sortBlogPosts
 } from '$lib/schemas/blog-post';
 import { contactFormSchema } from '$lib/schemas/contact';
@@ -155,6 +158,57 @@ describe('blog schema', () => {
 
 	it('formats blog dates', () => {
 		expect(formatBlogDate('2026-07-18')).toContain('2026');
+	});
+
+	it('accepts optional continued_reading slug', () => {
+		expect(
+			blogPostSchema.parse({ ...samplePost, continued_reading: 'another-post' }).continued_reading
+		).toBe('another-post');
+		expect(blogPostSchema.parse({ ...samplePost, continued_reading: '' }).continued_reading).toBe(
+			undefined
+		);
+	});
+
+	it('filters by selected tags then title search', () => {
+		const post = { title: 'Gildenkrieg Simulation Devlog', tags: ['gamedev', 'cpp'] };
+		expect(matchesBlogSearch(post, '', [])).toBe(true);
+		expect(matchesBlogSearch(post, '', ['gamedev'])).toBe(true);
+		expect(matchesBlogSearch(post, '', ['networking'])).toBe(false);
+		expect(matchesBlogSearch(post, '', ['networking', 'cpp'])).toBe(true);
+		expect(matchesBlogSearch(post, 'gildenkrieg', ['gamedev'])).toBe(true);
+		expect(matchesBlogSearch(post, 'gildenkrieg physics', ['gamedev'])).toBe(false);
+		expect(matchesBlogSearch({ title: 'Untagged', tags: [] }, '', [])).toBe(true);
+		expect(matchesBlogSearch({ title: 'Untagged', tags: [] }, '', ['gamedev'])).toBe(false);
+	});
+
+	it('collects unique sorted tags', () => {
+		expect(
+			collectBlogTags([
+				{ tags: ['cpp', 'gamedev'] },
+				{ tags: ['gamedev', 'ecs'] },
+				{}
+			])
+		).toEqual(['cpp', 'ecs', 'gamedev']);
+	});
+
+	it('resolves continued reading with explicit then next then latest fallback', () => {
+		const posts = sortBlogPosts([
+			{ ...samplePost, slug: 'newest', published_at: '2026-07-03', title: 'Newest' },
+			{ ...samplePost, slug: 'middle', published_at: '2026-07-02', title: 'Middle' },
+			{ ...samplePost, slug: 'oldest', published_at: '2026-07-01', title: 'Oldest' }
+		]);
+
+		expect(resolveContinuedReading(posts[0]!, posts)?.slug).toBe('middle');
+		expect(resolveContinuedReading(posts[2]!, posts)?.slug).toBe('newest');
+		expect(
+			resolveContinuedReading(
+				{ ...posts[0]!, continued_reading: 'oldest' },
+				posts
+			)?.slug
+		).toBe('oldest');
+		expect(
+			resolveContinuedReading({ ...posts[0]!, continued_reading: 'missing' }, posts)?.slug
+		).toBe('middle');
 	});
 });
 

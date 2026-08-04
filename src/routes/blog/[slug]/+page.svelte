@@ -2,6 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import TagList from '$lib/components/TagList.svelte';
 	import ProseContent from '$lib/components/ProseContent.svelte';
+	import BlogCard from '$lib/components/BlogCard.svelte';
 	import { formatBlogDate } from '$lib/schemas/blog-post';
 	import type { PageData } from './$types';
 
@@ -30,4 +31,13 @@
 	</header>
 
 	<ProseContent html={data.bodyHtml} />
+
+	{#if data.continuedReading}
+		<footer class="border-border mt-10 border-t pt-8">
+			<p class="text-accent mb-3 font-mono text-xs tracking-[0.2em] uppercase">
+				Continue reading
+			</p>
+			<BlogCard post={data.continuedReading} utmSource="continued_reading" />
+		</footer>
+	{/if}
 </article>

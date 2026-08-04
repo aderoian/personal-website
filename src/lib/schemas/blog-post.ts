@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { slugSchema } from './project';
 
+const optionalSlugSchema = z.preprocess((value) => {
+	if (value === '' || value === null || value === undefined) return undefined;
+	return value;
+}, slugSchema.optional());
+
 export const blogPostSchema = z.object({
 	slug: slugSchema,
 	title: z.string().trim().min(1),
@@ -11,7 +16,9 @@ export const blogPostSchema = z.object({
 	updated_at: z
 		.string()
 		.regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/, 'updated_at must be ISO UTC'),
-	tags: z.array(z.string().trim().min(1)).optional()
+	tags: z.array(z.string().trim().min(1)).optional(),
+	/** Optional slug of the post to suggest after this article. */
+	continued_reading: optionalSlugSchema
 });
 
 export const blogFileSchema = z.array(blogPostSchema).superRefine((posts, ctx) => {
@@ -65,4 +72,78 @@ export function formatBlogDate(date: string): string {
 		day: 'numeric',
 		timeZone: 'UTC'
 	});
+}
+
+export type BlogSearchable = {
+	title: string;
+	tags?: string[];
+};
+
+/**
+ * Tag filter: with no tags selected, everything is visible.
+ * With any tags selected, an item must share at least one selected tag.
+ * Untagged items only pass when nothing is selected.
+ */
+export function matchesBlogTags(item: BlogSearchable, selectedTags: string[]): boolean {
+	if (selectedTags.length === 0) return true;
+	const itemTags = item.tags ?? [];
+	if (itemTags.length === 0) return false;
+	const selected = new Set(selectedTags.map((tag) => tag.toLowerCase()));
+	return itemTags.some((tag) => selected.has(tag.toLowerCase()));
+}
+
+/** Case-insensitive title match; every query word must appear in the title. */
+export function matchesBlogTitle(item: BlogSearchable, query: string): boolean {
+	const words = query
+		.trim()
+		.toLowerCase()
+		.split(/\s+/)
+		.filter(Boolean);
+	if (words.length === 0) return true;
+	const title = item.title.toLowerCase();
+	return words.every((word) => title.includes(word));
+}
+
+/** Tag filter first, then title search. */
+export function matchesBlogSearch(
+	item: BlogSearchable,
+	query: string,
+	selectedTags: string[] = []
+): boolean {
+	if (!matchesBlogTags(item, selectedTags)) return false;
+	return matchesBlogTitle(item, query);
+}
+
+export function collectBlogTags(items: { tags?: string[] }[]): string[] {
+	const tags = new Set<string>();
+	for (const item of items) {
+		for (const tag of item.tags ?? []) {
+			tags.add(tag);
+		}
+	}
+	return [...tags].sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Prefer an explicit `continued_reading` slug when that post is public.
+ * Otherwise use the next older published post, or the latest if there is no next.
+ */
+export function resolveContinuedReading(
+	current: BlogPost,
+	published: BlogPost[]
+): BlogPost | undefined {
+	const others = published.filter((post) => post.slug !== current.slug);
+	if (others.length === 0) return undefined;
+
+	if (current.continued_reading) {
+		const explicit = others.find((post) => post.slug === current.continued_reading);
+		if (explicit) return explicit;
+	}
+
+	const index = published.findIndex((post) => post.slug === current.slug);
+	if (index !== -1 && index + 1 < published.length) {
+		return published[index + 1];
+	}
+
+	return others[0];
 }

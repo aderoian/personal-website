@@ -2,18 +2,25 @@
 	import SourceEditor from '$lib/components/admin/SourceEditor.svelte';
 	import type { BlogFormValues } from '$lib/admin-forms';
 
+	type PostOption = {
+		slug: string;
+		title: string;
+	};
+
 	let {
 		values,
 		errors = {},
 		formError = '',
 		mode,
-		slug
+		slug,
+		postOptions = []
 	}: {
 		values: BlogFormValues;
 		errors?: Record<string, string>;
 		formError?: string;
 		mode: 'create' | 'edit';
 		slug?: string;
+		postOptions?: PostOption[];
 	} = $props();
 
 	let confirmDelete = $state(false);
@@ -22,6 +29,10 @@
 	let uploaded: { url: string; markdown: string; html: string } | null = $state(null);
 	let fileInput: HTMLInputElement | undefined = $state();
 	let copiedField = $state<'url' | 'markdown' | 'html' | null>(null);
+
+	const continuedReadingOptions = $derived(
+		postOptions.filter((post) => post.slug !== (slug ?? values.slug))
+	);
 
 	async function uploadImage() {
 		uploadError = '';
@@ -133,6 +144,26 @@
 			<input id="tags" name="tags" class="admin-input" value={values.tags} />
 			{#if errors.tags}<p class="admin-field-error">{errors.tags}</p>{/if}
 		</div>
+	</div>
+
+	<div>
+		<label class="admin-label" for="continued_reading">Continued reading</label>
+		<select
+			id="continued_reading"
+			name="continued_reading"
+			class="admin-input"
+			value={values.continued_reading}
+		>
+			<option value="">Automatic (next older, or latest)</option>
+			{#each continuedReadingOptions as post (post.slug)}
+				<option value={post.slug}>{post.title}</option>
+			{/each}
+		</select>
+		{#if errors.continued_reading}<p class="admin-field-error">{errors.continued_reading}</p>{/if}
+		<p class="text-text-muted mt-1 text-xs">
+			Shown at the bottom of the article. Leave blank to suggest the next older post, or the latest
+			if there isn’t one.
+		</p>
 	</div>
 
 	<label class="flex items-center gap-2 text-sm">

@@ -26,6 +26,7 @@ export type BlogFormValues = {
 	published: boolean;
 	published_at: string;
 	tags: string;
+	continued_reading: string;
 };
 
 export type BlogCollectionFormValues = {
@@ -60,7 +61,8 @@ export const emptyBlogFormValues = (): BlogFormValues => ({
 	body: '',
 	published: false,
 	published_at: '',
-	tags: ''
+	tags: '',
+	continued_reading: ''
 });
 
 export const emptyBlogCollectionFormValues = (): BlogCollectionFormValues => ({
@@ -98,7 +100,8 @@ export function blogToFormValues(post: BlogPost): BlogFormValues {
 		body: post.body,
 		published: post.published,
 		published_at: post.published_at,
-		tags: post.tags?.join(', ') ?? ''
+		tags: post.tags?.join(', ') ?? '',
+		continued_reading: post.continued_reading ?? ''
 	};
 }
 

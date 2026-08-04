@@ -23,4 +23,5 @@
 	values={form?.values ?? data.values}
 	errors={form?.errors ?? {}}
 	formError={form?.formError ?? ''}
+	postOptions={data.postOptions}
 />

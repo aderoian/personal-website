@@ -6,6 +6,7 @@ import {
 	ContentNotFoundError,
 	deleteBlogPost,
 	findBlogPostBySlug,
+	loadBlogPosts,
 	setBlogPostPublished,
 	updateBlogPost,
 	utcNowIso,
@@ -22,7 +23,8 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		post,
-		values: blogToFormValues(post)
+		values: blogToFormValues(post),
+		postOptions: loadBlogPosts().map((entry) => ({ slug: entry.slug, title: entry.title }))
 	};
 };
 
@@ -41,7 +43,8 @@ export const actions: Actions = {
 			body: String(formData.get('body') ?? ''),
 			published: checkboxChecked(formData.get('published')),
 			published_at: String(formData.get('published_at') ?? ''),
-			tags: String(formData.get('tags') ?? '')
+			tags: String(formData.get('tags') ?? ''),
+			continued_reading: String(formData.get('continued_reading') ?? '')
 		};
 
 		const publishedAt = values.published_at.trim() || existing.published_at || utcTodayDate();
@@ -55,7 +58,8 @@ export const actions: Actions = {
 			published: values.published,
 			published_at: publishedAt,
 			updated_at: now,
-			tags: parseTagsInput(formData.get('tags'))
+			tags: parseTagsInput(formData.get('tags')),
+			continued_reading: values.continued_reading
 		});
 
 		if (!parsed.success) {

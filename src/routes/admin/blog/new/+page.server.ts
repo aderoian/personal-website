@@ -4,6 +4,7 @@ import { checkboxChecked, parseTagsInput, safeParseFields } from '$lib/server/ad
 import {
 	ContentConflictError,
 	createBlogPost,
+	loadBlogPosts,
 	utcNowIso,
 	utcTodayDate
 } from '$lib/server/content/blog';
@@ -15,7 +16,8 @@ export const load: PageServerLoad = async () => {
 		values: {
 			...emptyBlogFormValues(),
 			published_at: utcTodayDate()
-		}
+		},
+		postOptions: loadBlogPosts().map((post) => ({ slug: post.slug, title: post.title }))
 	};
 };
 
@@ -29,7 +31,8 @@ export const actions: Actions = {
 			body: String(formData.get('body') ?? ''),
 			published: checkboxChecked(formData.get('published')),
 			published_at: String(formData.get('published_at') ?? ''),
-			tags: String(formData.get('tags') ?? '')
+			tags: String(formData.get('tags') ?? ''),
+			continued_reading: String(formData.get('continued_reading') ?? '')
 		};
 
 		const publishedAt = values.published_at.trim() || utcTodayDate();
@@ -43,7 +46,8 @@ export const actions: Actions = {
 			published: values.published,
 			published_at: publishedAt,
 			updated_at: now,
-			tags: parseTagsInput(formData.get('tags'))
+			tags: parseTagsInput(formData.get('tags')),
+			continued_reading: values.continued_reading
 		});
 
 		if (!parsed.success) {
