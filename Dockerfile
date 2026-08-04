@@ -21,13 +21,18 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/build ./build
+# Seed copy survives volume mounts that hide /app/data.
+COPY data ./data-seed
 COPY data ./data
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 
-RUN addgroup -S app && adduser -S app -G app \
-	&& chown -R app:app /app/data
+RUN chmod +x /app/docker-entrypoint.sh \
+	&& addgroup -S app && adduser -S app -G app \
+	&& chown -R app:app /app/data /app/data-seed
 
 USER app
 
 EXPOSE 3000
 
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "build/index.js"]

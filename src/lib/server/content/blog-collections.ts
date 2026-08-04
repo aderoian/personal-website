@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import {
 	blogCollectionSchema,
 	blogCollectionsFileSchema,
@@ -15,7 +16,11 @@ function collectionsFilePath(): string {
 }
 
 function readAllCollections(): BlogCollection[] {
-	const parsed = blogCollectionsFileSchema.parse(readJsonFile(collectionsFilePath()));
+	const path = collectionsFilePath();
+	if (!existsSync(path)) {
+		return [];
+	}
+	const parsed = blogCollectionsFileSchema.parse(readJsonFile(path));
 	return sortBlogCollections(parsed);
 }
 

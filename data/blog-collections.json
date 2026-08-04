@@ -1,0 +1,17 @@
+[
+	{
+		"slug": "test",
+		"title": "Test Collection",
+		"summary": "This is a test collection.",
+		"tags": [
+			"gildenkrieg"
+		],
+		"posts": [
+			"gildenkrieg-simulation-devlog-part-1",
+			"gildenkrieg-simulation-devlog-part-2",
+			"gildenkrieg-simulation-devlog-part-3"
+		],
+		"published": true,
+		"updated_at": "2026-08-04T21:07:29Z"
+	}
+]

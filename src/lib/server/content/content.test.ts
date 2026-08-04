@@ -110,6 +110,13 @@ describe('content repositories (temp DATA_DIR)', () => {
 		published: true
 	};
 
+	it('treats a missing blog-collections.json as an empty list', () => {
+		rmSync(join(tempDir, 'blog-collections.json'), { force: true });
+		expect(existsSync(join(tempDir, 'blog-collections.json'))).toBe(false);
+		expect(loadBlogCollections()).toEqual([]);
+		expect(getPublishedBlogCollections()).toEqual([]);
+	});
+
 	it('creates, updates, and deletes projects with atomic persistence', async () => {
 		await createProject(baseProject);
 		expect(loadProjects()).toHaveLength(1);
