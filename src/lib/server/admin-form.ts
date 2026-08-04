@@ -22,6 +22,20 @@ export function parseTagsInput(raw: FormDataEntryValue | null): string[] | undef
 	return tags.length > 0 ? tags : undefined;
 }
 
+/** Ordered post slugs from repeated `posts` form fields. Drops empties; keeps first-seen order. */
+export function parsePostsFromForm(formData: FormData): string[] {
+	const seen = new Set<string>();
+	const posts: string[] = [];
+	for (const raw of formData.getAll('posts')) {
+		if (typeof raw !== 'string') continue;
+		const slug = raw.trim();
+		if (!slug || seen.has(slug)) continue;
+		seen.add(slug);
+		posts.push(slug);
+	}
+	return posts;
+}
+
 export function optionalNumber(raw: FormDataEntryValue | null): number | undefined {
 	if (typeof raw !== 'string' || raw.trim() === '') return undefined;
 	const value = Number(raw);

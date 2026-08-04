@@ -11,6 +11,16 @@ import {
 	loadBlogPosts
 } from '$lib/server/content/blog';
 import {
+	createBlogCollection,
+	deleteBlogCollection,
+	findBlogCollectionBySlug,
+	getBlogCollectionBySlug,
+	getPublishedBlogCollections,
+	loadBlogCollections,
+	setBlogCollectionPublished,
+	updateBlogCollection
+} from '$lib/server/content/blog-collections';
+import {
 	BlogImageUploadError,
 	isSafeBlogImageFilename,
 	saveBlogImageUpload
@@ -61,6 +71,14 @@ describe('content loaders (repository data)', () => {
 		expect(posts.length).toBeGreaterThan(0);
 		expect(posts.every((post) => post.published)).toBe(true);
 	});
+
+	it('loads blog collections from data/blog-collections.json', () => {
+		const collections = loadBlogCollections();
+		expect(Array.isArray(collections)).toBe(true);
+		expect(collections.every((collection) => typeof collection.published === 'boolean')).toBe(
+			true
+		);
+	});
 });
 
 describe('content repositories (temp DATA_DIR)', () => {
@@ -72,6 +90,7 @@ describe('content repositories (temp DATA_DIR)', () => {
 		process.env.DATA_DIR = tempDir;
 		writeFileSync(join(tempDir, 'projects.json'), '[]\n', 'utf8');
 		writeFileSync(join(tempDir, 'blog.json'), '[]\n', 'utf8');
+		writeFileSync(join(tempDir, 'blog-collections.json'), '[]\n', 'utf8');
 	});
 
 	afterEach(() => {
@@ -200,6 +219,76 @@ describe('content repositories (temp DATA_DIR)', () => {
 		};
 		await createBlogPost(post);
 		await expect(createBlogPost(post)).rejects.toThrow(/already exists/);
+	});
+
+	it('creates, updates, publishes, and deletes blog collections', async () => {
+		const base = {
+			slug: 'devlog',
+			title: 'Devlog',
+			summary: 'Build notes',
+			tags: ['devlog'],
+			posts: ['hello', 'earlier'],
+			published: false,
+			updated_at: '2026-07-18T12:00:00Z'
+		};
+
+		await createBlogCollection(base);
+		expect(loadBlogCollections()).toHaveLength(1);
+		expect(JSON.parse(readFileSync(join(tempDir, 'blog-collections.json'), 'utf8'))).toHaveLength(
+			1
+		);
+		expect(getPublishedBlogCollections()).toHaveLength(0);
+		expect(getBlogCollectionBySlug('devlog')).toBeUndefined();
+		expect(findBlogCollectionBySlug('devlog')?.title).toBe('Devlog');
+
+		await updateBlogCollection('devlog', {
+			...base,
+			title: 'Devlog Series',
+			posts: ['hello'],
+			updated_at: '2026-07-19T12:00:00Z'
+		});
+		expect(findBlogCollectionBySlug('devlog')?.title).toBe('Devlog Series');
+		expect(findBlogCollectionBySlug('devlog')?.posts).toEqual(['hello']);
+
+		await setBlogCollectionPublished('devlog', true);
+		expect(getPublishedBlogCollections().map((c) => c.slug)).toEqual(['devlog']);
+		expect(getBlogCollectionBySlug('devlog')?.published).toBe(true);
+
+		await deleteBlogCollection('devlog');
+		expect(loadBlogCollections()).toHaveLength(0);
+	});
+
+	it('rejects duplicate blog collection slugs and empty post lists', async () => {
+		const collection = {
+			slug: 'series',
+			title: 'Series',
+			summary: 'Summary',
+			posts: ['hello'],
+			published: true,
+			updated_at: '2026-07-18T12:00:00Z'
+		};
+		await createBlogCollection(collection);
+		await expect(createBlogCollection(collection)).rejects.toThrow(/already exists/);
+		await expect(
+			createBlogCollection({
+				...collection,
+				slug: 'empty',
+				posts: []
+			})
+		).rejects.toThrow();
+	});
+
+	it('rejects duplicate post refs within a collection', async () => {
+		await expect(
+			createBlogCollection({
+				slug: 'dupes',
+				title: 'Dupes',
+				summary: 'Summary',
+				posts: ['hello', 'hello'],
+				published: true,
+				updated_at: '2026-07-18T12:00:00Z'
+			})
+		).rejects.toThrow();
 	});
 
 	it('saves uploaded blog images with unique names and markdown/html refs', async () => {

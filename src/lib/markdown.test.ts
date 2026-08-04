@@ -73,6 +73,14 @@ describe('markdown rendering', () => {
 		expect(html).not.toMatch(/href="\/"[^>]*target="_blank"/);
 	});
 
+	it('wraps markdown tables in a scroll container', () => {
+		const html = renderMarkdown('| Name | Value |\n| --- | --- |\n| alpha | 1 |');
+		expect(html).toContain('class="table-scroll"');
+		expect(html).toContain('<table>');
+		expect(html).toContain('<th>Name</th>');
+		expect(html).toContain('<td>alpha</td>');
+	});
+
 	it('rejects oversized preview input', () => {
 		const result = renderMarkdownPreview('x'.repeat(MAX_PREVIEW_CHARS + 1));
 		expect(result.ok).toBe(false);

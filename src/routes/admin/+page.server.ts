@@ -2,6 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import { clearAdminSessionCookie } from '$lib/server/auth';
 import { getOverallAnalytics } from '$lib/server/content/blog-analytics';
 import { loadBlogPosts } from '$lib/server/content/blog';
+import { loadBlogCollections } from '$lib/server/content/blog-collections';
 import { loadProjects } from '$lib/server/content/projects';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -37,6 +38,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		projects: loadProjects(),
+		collections: loadBlogCollections(),
 		posts,
 		analytics: {
 			total: analytics.total,

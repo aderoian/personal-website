@@ -355,6 +355,32 @@ html[data-theme='light'] {
 		& pre code {
 			@apply text-text bg-transparent p-0 text-sm leading-relaxed;
 		}
+
+		& .table-scroll {
+			@apply border-border mb-4 overflow-x-auto rounded border;
+		}
+
+		& .table-scroll table {
+			@apply mb-0 w-max min-w-full border-collapse text-left text-sm;
+		}
+
+		& th,
+		& td {
+			@apply border-border border-b px-4 py-3 align-top;
+			min-width: 7.5rem;
+		}
+
+		& th {
+			@apply text-text bg-bg-panel/70 font-semibold whitespace-nowrap;
+		}
+
+		& td {
+			@apply text-text-muted;
+		}
+
+		& tr:last-child td {
+			@apply border-b-0;
+		}
 	}
 
 	.code-block-shell {

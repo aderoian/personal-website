@@ -2,6 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import BlogCard from '$lib/components/BlogCard.svelte';
+	import BlogCollectionCard from '$lib/components/BlogCollectionCard.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import type { PageData } from './$types';
 
@@ -21,14 +22,39 @@
 	lede="Writing about projects, engineering notes, and things I’m learning."
 />
 
-{#if data.posts.length === 0}
-	<EmptyState message="No posts yet." />
-{:else}
-	<ul class="motion-stagger grid gap-6 sm:grid-cols-2">
-		{#each data.posts as post (post.slug)}
-			<li>
-				<BlogCard {post} />
-			</li>
-		{/each}
-	</ul>
+{#if data.collections.length > 0}
+	<section class="mb-12">
+		<div class="mb-4">
+			<h2 class="text-text text-xl font-semibold">Collections</h2>
+			<p class="text-text-muted text-sm">Curated groups of related posts.</p>
+		</div>
+		<ul class="motion-stagger grid gap-6 sm:grid-cols-2">
+			{#each data.collections as collection (collection.slug)}
+				<li>
+					<BlogCollectionCard {collection} />
+				</li>
+			{/each}
+		</ul>
+	</section>
 {/if}
+
+<section>
+	{#if data.collections.length > 0}
+		<div class="mb-4">
+			<h2 class="text-text text-xl font-semibold">Articles</h2>
+			<p class="text-text-muted text-sm">All published posts.</p>
+		</div>
+	{/if}
+
+	{#if data.posts.length === 0}
+		<EmptyState message="No posts yet." />
+	{:else}
+		<ul class="motion-stagger grid gap-6 sm:grid-cols-2">
+			{#each data.posts as post (post.slug)}
+				<li>
+					<BlogCard {post} />
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</section>

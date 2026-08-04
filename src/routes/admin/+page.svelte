@@ -85,6 +85,52 @@
 	{/if}
 </section>
 
+<section class="mb-10">
+	<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+		<div>
+			<h2 class="text-text text-xl font-semibold">Blog collections</h2>
+			<p class="text-text-muted text-sm">{data.collections.length} total</p>
+		</div>
+		<a href="/admin/blog/collections/new" class="btn-primary">New collection</a>
+	</div>
+
+	{#if data.collections.length === 0}
+		<p class="text-text-muted panel p-4 text-sm">No collections yet.</p>
+	{:else}
+		<ul class="divide-border panel divide-y overflow-hidden">
+			{#each data.collections as collection (collection.slug)}
+				<li class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+					<div class="min-w-0">
+						<a
+							href="/admin/blog/collections/{collection.slug}"
+							class="text-text font-medium hover:underline"
+						>
+							{collection.title}
+						</a>
+						<p class="text-text-muted font-mono text-xs">
+							{collection.slug} · {collection.posts.length}
+							{collection.posts.length === 1 ? 'post' : 'posts'}
+						</p>
+					</div>
+					<div class="flex flex-wrap items-center gap-2">
+						<span class="chip {collection.published ? '' : 'opacity-60'}">
+							{collection.published ? 'Published' : 'Draft'}
+						</span>
+						<form method="POST" action="/admin/blog/collections/{collection.slug}?/togglePublish">
+							<button type="submit" class="btn px-3 py-1 text-xs">
+								{collection.published ? 'Unpublish' : 'Publish'}
+							</button>
+						</form>
+						<a href="/admin/blog/collections/{collection.slug}" class="btn px-3 py-1 text-xs">
+							Edit
+						</a>
+					</div>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</section>
+
 <section>
 	<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
 		<div>

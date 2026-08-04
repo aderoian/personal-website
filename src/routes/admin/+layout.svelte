@@ -9,7 +9,8 @@
 	const links = [
 		{ href: '/admin', label: 'Dashboard' },
 		{ href: '/admin/projects/new', label: 'New project' },
-		{ href: '/admin/blog/new', label: 'New post' }
+		{ href: '/admin/blog/new', label: 'New post' },
+		{ href: '/admin/blog/collections/new', label: 'New collection' }
 	] as const;
 
 	function isActive(href: string): boolean {

@@ -1,5 +1,6 @@
 import type { Project } from '$lib/schemas/project';
 import type { BlogPost } from '$lib/schemas/blog-post';
+import type { BlogCollection } from '$lib/schemas/blog-collection';
 
 export type ProjectFormValues = {
 	slug: string;
@@ -27,6 +28,15 @@ export type BlogFormValues = {
 	tags: string;
 };
 
+export type BlogCollectionFormValues = {
+	slug: string;
+	title: string;
+	summary: string;
+	tags: string;
+	posts: string[];
+	published: boolean;
+};
+
 export const emptyProjectFormValues = (): ProjectFormValues => ({
 	slug: '',
 	title: '',
@@ -51,6 +61,15 @@ export const emptyBlogFormValues = (): BlogFormValues => ({
 	published: false,
 	published_at: '',
 	tags: ''
+});
+
+export const emptyBlogCollectionFormValues = (): BlogCollectionFormValues => ({
+	slug: '',
+	title: '',
+	summary: '',
+	tags: '',
+	posts: [],
+	published: false
 });
 
 export function projectToFormValues(project: Project): ProjectFormValues {
@@ -80,5 +99,16 @@ export function blogToFormValues(post: BlogPost): BlogFormValues {
 		published: post.published,
 		published_at: post.published_at,
 		tags: post.tags?.join(', ') ?? ''
+	};
+}
+
+export function blogCollectionToFormValues(collection: BlogCollection): BlogCollectionFormValues {
+	return {
+		slug: collection.slug,
+		title: collection.title,
+		summary: collection.summary,
+		tags: collection.tags?.join(', ') ?? '',
+		posts: [...collection.posts],
+		published: collection.published
 	};
 }

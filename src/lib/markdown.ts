@@ -114,6 +114,10 @@ renderer.link = function ({ href, title, tokens }: Tokens.Link): string {
 	}
 	return `<a href="${safeHref}"${titleAttr}>${text}</a>`;
 };
+renderer.table = function (token: Tokens.Table): string {
+	const defaultTable = marked.Renderer.prototype.table.call(this, token);
+	return `<div class="table-scroll">${defaultTable}</div>\n`;
+};
 
 marked.use({ renderer });
 
