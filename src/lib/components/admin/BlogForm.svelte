@@ -17,6 +17,65 @@
 	} = $props();
 
 	let confirmDelete = $state(false);
+	let uploading = $state(false);
+	let uploadError = $state('');
+	let uploaded: { url: string; markdown: string; html: string } | null = $state(null);
+	let fileInput: HTMLInputElement | undefined = $state();
+	let copiedField = $state<'url' | 'markdown' | 'html' | null>(null);
+
+	async function uploadImage() {
+		uploadError = '';
+		uploaded = null;
+		copiedField = null;
+
+		const file = fileInput?.files?.[0];
+		if (!file) {
+			uploadError = 'Choose an image file to upload.';
+			return;
+		}
+
+		uploading = true;
+		try {
+			const body = new FormData();
+			body.set('image', file);
+			const response = await fetch('/admin/blog/upload', {
+				method: 'POST',
+				body,
+				credentials: 'same-origin'
+			});
+			const payload = (await response.json()) as {
+				error?: string;
+				url?: string;
+				markdown?: string;
+				html?: string;
+			};
+
+			if (!response.ok || !payload.url || !payload.markdown || !payload.html) {
+				uploadError = payload.error ?? 'Upload failed.';
+				return;
+			}
+
+			uploaded = {
+				url: payload.url,
+				markdown: payload.markdown,
+				html: payload.html
+			};
+			if (fileInput) fileInput.value = '';
+		} catch {
+			uploadError = 'Upload failed. Please try again.';
+		} finally {
+			uploading = false;
+		}
+	}
+
+	async function copyText(field: 'url' | 'markdown' | 'html', text: string) {
+		try {
+			await navigator.clipboard.writeText(text);
+			copiedField = field;
+		} catch {
+			copiedField = null;
+		}
+	}
 </script>
 
 {#if formError}
@@ -65,6 +124,9 @@
 				placeholder="Leave blank to use today on publish"
 			/>
 			{#if errors.published_at}<p class="admin-field-error">{errors.published_at}</p>{/if}
+			<p class="text-text-muted mt-1 text-xs">
+				Future dates stay hidden from the public site until that day (UTC).
+			</p>
 		</div>
 		<div>
 			<label class="admin-label" for="tags">Tags (comma-separated)</label>
@@ -100,3 +162,82 @@
 		</form>
 	</div>
 {/if}
+
+<div class="border-border mt-10 border-t pt-6">
+	<h3 class="text-text mb-2 text-lg font-semibold">Upload image</h3>
+	<p class="text-text-muted mb-4 text-sm">
+		Upload an image, then paste the markdown or HTML reference into the post body.
+	</p>
+
+	<div class="space-y-3">
+		<div>
+			<label class="admin-label" for="blog-image-upload">Image file</label>
+			<input
+				id="blog-image-upload"
+				bind:this={fileInput}
+				type="file"
+				accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
+				class="admin-input"
+			/>
+		</div>
+		<button type="button" class="btn-primary" disabled={uploading} onclick={uploadImage}>
+			{uploading ? 'Uploading…' : 'Upload image'}
+		</button>
+	</div>
+
+	{#if uploadError}
+		<p
+			class="mt-4 rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200"
+			role="alert"
+		>
+			{uploadError}
+		</p>
+	{/if}
+
+	{#if uploaded}
+		{@const result = uploaded}
+		<div class="mt-4 space-y-3">
+			<p class="text-text text-sm font-medium">Image ready — copy a reference into the post:</p>
+			<div>
+				<label class="admin-label" for="upload-url">URL</label>
+				<div class="flex flex-wrap gap-2">
+					<input id="upload-url" class="admin-input font-mono flex-1" readonly value={result.url} />
+					<button type="button" class="btn px-3 py-1 text-xs" onclick={() => copyText('url', result.url)}>
+						{copiedField === 'url' ? 'Copied' : 'Copy'}
+					</button>
+				</div>
+			</div>
+			<div>
+				<label class="admin-label" for="upload-markdown">Markdown</label>
+				<div class="flex flex-wrap gap-2">
+					<input
+						id="upload-markdown"
+						class="admin-input font-mono flex-1"
+						readonly
+						value={result.markdown}
+					/>
+					<button
+						type="button"
+						class="btn px-3 py-1 text-xs"
+						onclick={() => copyText('markdown', result.markdown)}
+					>
+						{copiedField === 'markdown' ? 'Copied' : 'Copy'}
+					</button>
+				</div>
+			</div>
+			<div>
+				<label class="admin-label" for="upload-html">HTML</label>
+				<div class="flex flex-wrap gap-2">
+					<input id="upload-html" class="admin-input font-mono flex-1" readonly value={result.html} />
+					<button
+						type="button"
+						class="btn px-3 py-1 text-xs"
+						onclick={() => copyText('html', result.html)}
+					>
+						{copiedField === 'html' ? 'Copied' : 'Copy'}
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+</div>

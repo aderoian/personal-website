@@ -30,14 +30,30 @@ export const blogFileSchema = z.array(blogPostSchema).superRefine((posts, ctx) =
 
 export type BlogPost = z.infer<typeof blogPostSchema>;
 
+/** Calendar date in UTC as YYYY-MM-DD (matches `published_at`). */
+export function utcTodayDateString(): string {
+	return new Date().toISOString().slice(0, 10);
+}
+
 export function sortBlogPosts(posts: BlogPost[]): BlogPost[] {
 	return [...posts].sort(
 		(a, b) => b.published_at.localeCompare(a.published_at) || a.slug.localeCompare(b.slug)
 	);
 }
 
-export function publishedBlogPosts(posts: BlogPost[]): BlogPost[] {
-	return sortBlogPosts(posts.filter((post) => post.published));
+/** Published and not scheduled for a future calendar date. */
+export function isBlogPostPubliclyVisible(
+	post: BlogPost,
+	today: string = utcTodayDateString()
+): boolean {
+	return post.published && post.published_at <= today;
+}
+
+export function publishedBlogPosts(
+	posts: BlogPost[],
+	today: string = utcTodayDateString()
+): BlogPost[] {
+	return sortBlogPosts(posts.filter((post) => isBlogPostPubliclyVisible(post, today)));
 }
 
 export function formatBlogDate(date: string): string {

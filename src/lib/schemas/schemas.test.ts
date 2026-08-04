@@ -9,6 +9,7 @@ import {
 import {
 	blogPostSchema,
 	formatBlogDate,
+	isBlogPostPubliclyVisible,
 	publishedBlogPosts,
 	sortBlogPosts
 } from '$lib/schemas/blog-post';
@@ -109,11 +110,39 @@ describe('blog schema', () => {
 	});
 
 	it('filters unpublished posts', () => {
-		const posts = publishedBlogPosts([
-			samplePost,
-			{ ...samplePost, slug: 'draft', published: false }
-		]);
+		const posts = publishedBlogPosts(
+			[samplePost, { ...samplePost, slug: 'draft', published: false }],
+			'2026-07-18'
+		);
 		expect(posts).toHaveLength(1);
+	});
+
+	it('hides future-dated published posts until their date', () => {
+		const posts = publishedBlogPosts(
+			[
+				samplePost,
+				{
+					...samplePost,
+					slug: 'scheduled',
+					published: true,
+					published_at: '2026-12-01'
+				}
+			],
+			'2026-07-18'
+		);
+		expect(posts.map((post) => post.slug)).toEqual(['hello-world']);
+		expect(
+			isBlogPostPubliclyVisible(
+				{ ...samplePost, slug: 'scheduled', published_at: '2026-12-01' },
+				'2026-07-18'
+			)
+		).toBe(false);
+		expect(
+			isBlogPostPubliclyVisible(
+				{ ...samplePost, slug: 'scheduled', published_at: '2026-12-01' },
+				'2026-12-01'
+			)
+		).toBe(true);
 	});
 
 	it('sorts by published_at descending', () => {

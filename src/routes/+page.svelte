@@ -2,6 +2,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import ProfileAvatar from '$lib/components/ProfileAvatar.svelte';
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
+	import BlogCard from '$lib/components/BlogCard.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import { site } from '$lib/config';
@@ -97,6 +98,26 @@
 			</div>
 		</div>
 	</section>
+
+	{#if data.latestPosts.length > 0}
+		<section class="motion-fade-up motion-delay-3" aria-labelledby="latest-post-heading">
+			<div class="border-border mb-6 flex items-end justify-between gap-4 border-b pb-4">
+				<h2 id="latest-post-heading" class="text-text text-2xl font-semibold">Latest from the blog</h2>
+				<a href="/blog" class="text-accent text-sm font-medium hover:text-white">View all →</a>
+			</div>
+			<ul
+				class="mx-auto grid gap-6 {data.latestPosts.length > 1
+					? 'max-w-6xl sm:grid-cols-2'
+					: 'max-w-xl'}"
+			>
+				{#each data.latestPosts as post (post.slug)}
+					<li>
+						<BlogCard {post} utmSource="home" />
+					</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
 
 	<section class="motion-fade-up motion-delay-3" aria-labelledby="featured-heading">
 		<div class="border-border mb-6 flex items-end justify-between gap-4 border-b pb-4">

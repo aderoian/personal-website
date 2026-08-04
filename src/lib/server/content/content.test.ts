@@ -1,13 +1,20 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	createBlogPost,
 	getBlogPostBySlug,
+	getLatestPublishedBlogPost,
+	getLatestPublishedBlogPosts,
 	getPublishedBlogPosts,
 	loadBlogPosts
 } from '$lib/server/content/blog';
+import {
+	BlogImageUploadError,
+	isSafeBlogImageFilename,
+	saveBlogImageUpload
+} from '$lib/server/content/blog-images';
 import {
 	createProject,
 	deleteProject,
@@ -49,8 +56,10 @@ describe('content loaders (repository data)', () => {
 		expect(project?.title).toBe('Stratos');
 	});
 
-	it('returns empty published blog posts after test post removal', () => {
-		expect(getPublishedBlogPosts()).toHaveLength(0);
+	it('loads published blog posts from data/blog.json', () => {
+		const posts = getPublishedBlogPosts();
+		expect(posts.length).toBeGreaterThan(0);
+		expect(posts.every((post) => post.published)).toBe(true);
 	});
 });
 
@@ -135,11 +144,48 @@ describe('content repositories (temp DATA_DIR)', () => {
 			published_at: '2026-07-18',
 			updated_at: '2026-07-18T12:00:00Z'
 		});
+		await createBlogPost({
+			slug: 'earlier',
+			title: 'Earlier',
+			summary: 'Summary',
+			body: '# Earlier',
+			published: true,
+			published_at: '2026-07-10',
+			updated_at: '2026-07-10T12:00:00Z'
+		});
 
-		expect(loadBlogPosts()).toHaveLength(2);
-		expect(getPublishedBlogPosts()).toHaveLength(1);
+		expect(loadBlogPosts()).toHaveLength(3);
+		expect(getPublishedBlogPosts()).toHaveLength(2);
 		expect(getBlogPostBySlug('draft')).toBeUndefined();
 		expect(getBlogPostBySlug('hello')?.title).toBe('Hello');
+		expect(getLatestPublishedBlogPosts(2).map((post) => post.slug)).toEqual(['hello', 'earlier']);
+		expect(getLatestPublishedBlogPosts(1).map((post) => post.slug)).toEqual(['hello']);
+	});
+
+	it('hides future-dated posts from public loaders and returns latest live post', async () => {
+		await createBlogPost({
+			slug: 'live',
+			title: 'Live',
+			summary: 'Summary',
+			body: '# Live',
+			published: true,
+			published_at: '2026-07-01',
+			updated_at: '2026-07-01T12:00:00Z'
+		});
+		await createBlogPost({
+			slug: 'scheduled',
+			title: 'Scheduled',
+			summary: 'Summary',
+			body: '# Scheduled',
+			published: true,
+			published_at: '2099-01-01',
+			updated_at: '2026-07-01T12:00:00Z'
+		});
+
+		expect(getPublishedBlogPosts().map((post) => post.slug)).toEqual(['live']);
+		expect(getBlogPostBySlug('scheduled')).toBeUndefined();
+		expect(getLatestPublishedBlogPost()?.slug).toBe('live');
+		expect(getLatestPublishedBlogPosts(2).map((post) => post.slug)).toEqual(['live']);
 	});
 
 	it('rejects duplicate blog slugs', async () => {
@@ -154,5 +200,25 @@ describe('content repositories (temp DATA_DIR)', () => {
 		};
 		await createBlogPost(post);
 		await expect(createBlogPost(post)).rejects.toThrow(/already exists/);
+	});
+
+	it('saves uploaded blog images with unique names and markdown/html refs', async () => {
+		const file = new File([Uint8Array.from([137, 80, 78, 71])], 'My Cool Photo.PNG', {
+			type: 'image/png'
+		});
+		const saved = await saveBlogImageUpload(file);
+
+		expect(isSafeBlogImageFilename(saved.filename)).toBe(true);
+		expect(saved.filename).toMatch(/-my-cool-photo\.png$/);
+		expect(saved.url).toBe(`/assets/blog/${saved.filename}`);
+		expect(saved.markdown).toBe(`![my cool photo](${saved.url})`);
+		expect(saved.html).toBe(`<img src="${saved.url}" alt="my cool photo" />`);
+		expect(existsSync(join(tempDir, 'blog-images', saved.filename))).toBe(true);
+		expect(readFileSync(join(tempDir, 'blog-images', saved.filename))).toHaveLength(4);
+	});
+
+	it('rejects unsupported blog image uploads', async () => {
+		const file = new File(['not-an-image'], 'notes.txt', { type: 'text/plain' });
+		await expect(saveBlogImageUpload(file)).rejects.toBeInstanceOf(BlogImageUploadError);
 	});
 });

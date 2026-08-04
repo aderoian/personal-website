@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { env } from '$env/dynamic/private';
 import {
 	constantTimeEqual,
 	createAdminSessionToken,
@@ -7,21 +8,21 @@ import {
 	verifyAdminSessionToken
 } from '$lib/server/auth';
 
-const originalPassword = process.env.ADMIN_PASSWORD;
-const originalSecret = process.env.ADMIN_SESSION_SECRET;
+const originalPassword = env.ADMIN_PASSWORD;
+const originalSecret = env.ADMIN_SESSION_SECRET;
 
 afterEach(() => {
-	if (originalPassword === undefined) delete process.env.ADMIN_PASSWORD;
-	else process.env.ADMIN_PASSWORD = originalPassword;
+	if (originalPassword === undefined) delete env.ADMIN_PASSWORD;
+	else env.ADMIN_PASSWORD = originalPassword;
 
-	if (originalSecret === undefined) delete process.env.ADMIN_SESSION_SECRET;
-	else process.env.ADMIN_SESSION_SECRET = originalSecret;
+	if (originalSecret === undefined) delete env.ADMIN_SESSION_SECRET;
+	else env.ADMIN_SESSION_SECRET = originalSecret;
 });
 
 describe('admin auth', () => {
 	it('fails closed when credentials are missing', () => {
-		delete process.env.ADMIN_PASSWORD;
-		delete process.env.ADMIN_SESSION_SECRET;
+		delete env.ADMIN_PASSWORD;
+		delete env.ADMIN_SESSION_SECRET;
 		expect(isAdminConfigured()).toBe(false);
 		expect(verifyAdminPassword('anything')).toBe(false);
 		expect(createAdminSessionToken()).toBeNull();
@@ -29,24 +30,24 @@ describe('admin auth', () => {
 	});
 
 	it('accepts a valid password and rejects an invalid one', () => {
-		process.env.ADMIN_PASSWORD = 'correct-horse';
-		process.env.ADMIN_SESSION_SECRET = 'session-secret-value-for-tests-32b';
+		env.ADMIN_PASSWORD = 'correct-horse';
+		env.ADMIN_SESSION_SECRET = 'session-secret-value-for-tests-32b';
 		expect(isAdminConfigured()).toBe(true);
 		expect(verifyAdminPassword('correct-horse')).toBe(true);
 		expect(verifyAdminPassword('wrong-password')).toBe(false);
 	});
 
 	it('creates and verifies signed session tokens', () => {
-		process.env.ADMIN_PASSWORD = 'correct-horse';
-		process.env.ADMIN_SESSION_SECRET = 'session-secret-value-for-tests-32b';
+		env.ADMIN_PASSWORD = 'correct-horse';
+		env.ADMIN_SESSION_SECRET = 'session-secret-value-for-tests-32b';
 		const token = createAdminSessionToken();
 		expect(token).toBeTruthy();
 		expect(verifyAdminSessionToken(token ?? undefined)).toBe(true);
 	});
 
 	it('rejects tampered session tokens', () => {
-		process.env.ADMIN_PASSWORD = 'correct-horse';
-		process.env.ADMIN_SESSION_SECRET = 'session-secret-value-for-tests-32b';
+		env.ADMIN_PASSWORD = 'correct-horse';
+		env.ADMIN_SESSION_SECRET = 'session-secret-value-for-tests-32b';
 		const token = createAdminSessionToken();
 		expect(token).toBeTruthy();
 		const [payload, signature] = (token as string).split('.');
@@ -55,8 +56,8 @@ describe('admin auth', () => {
 	});
 
 	it('rejects expired session tokens', () => {
-		process.env.ADMIN_PASSWORD = 'correct-horse';
-		process.env.ADMIN_SESSION_SECRET = 'session-secret-value-for-tests-32b';
+		env.ADMIN_PASSWORD = 'correct-horse';
+		env.ADMIN_SESSION_SECRET = 'session-secret-value-for-tests-32b';
 		const expiredPayload = Buffer.from(
 			JSON.stringify({ v: 1, exp: Math.floor(Date.now() / 1000) - 10 }),
 			'utf8'

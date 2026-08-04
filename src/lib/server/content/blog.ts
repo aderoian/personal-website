@@ -1,8 +1,10 @@
 import {
 	blogFileSchema,
 	blogPostSchema,
+	isBlogPostPubliclyVisible,
 	publishedBlogPosts,
 	sortBlogPosts,
+	utcTodayDateString,
 	type BlogPost
 } from '$lib/schemas/blog-post';
 import { ContentConflictError, ContentNotFoundError } from './errors';
@@ -36,8 +38,20 @@ export function getPublishedBlogPosts(): BlogPost[] {
 	return publishedBlogPosts(loadBlogPosts());
 }
 
+export function getLatestPublishedBlogPosts(limit = 2): BlogPost[] {
+	const count = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 0;
+	return getPublishedBlogPosts().slice(0, count);
+}
+
+export function getLatestPublishedBlogPost(): BlogPost | undefined {
+	return getLatestPublishedBlogPosts(1)[0];
+}
+
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {
-	return loadBlogPosts().find((post) => post.slug === slug && post.published);
+	const today = utcTodayDateString();
+	return loadBlogPosts().find(
+		(post) => post.slug === slug && isBlogPostPubliclyVisible(post, today)
+	);
 }
 
 export function findBlogPostBySlug(slug: string): BlogPost | undefined {
@@ -53,7 +67,7 @@ export function utcNowIso(): string {
 }
 
 export function utcTodayDate(): string {
-	return utcNowIso().slice(0, 10);
+	return utcTodayDateString();
 }
 
 export async function createBlogPost(input: unknown): Promise<BlogPost> {

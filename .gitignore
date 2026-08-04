@@ -24,3 +24,6 @@ includes/config.local.php
 # Logs
 *.log
 npm-debug.log*
+
+# Runtime blog image uploads (served from DATA_DIR)
+data/blog-images/

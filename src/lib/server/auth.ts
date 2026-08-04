@@ -1,4 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { env } from '$env/dynamic/private';
+import { dev } from '$app/environment';
 import type { Cookies } from '@sveltejs/kit';
 
 export const ADMIN_SESSION_COOKIE = 'admin_session';
@@ -10,7 +12,8 @@ type SessionPayload = {
 };
 
 function readSecret(name: 'ADMIN_PASSWORD' | 'ADMIN_SESSION_SECRET'): string | undefined {
-	const value = process.env[name]?.trim();
+	// `$env/dynamic/private` includes `.env` values under `vite dev`; `process.env` does not.
+	const value = env[name]?.trim();
 	return value || undefined;
 }
 
@@ -108,7 +111,7 @@ export function setAdminSessionCookie(cookies: Cookies, token: string): void {
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax',
-		secure: process.env.NODE_ENV === 'production',
+		secure: !dev,
 		maxAge: SESSION_TTL_SECONDS
 	});
 }
