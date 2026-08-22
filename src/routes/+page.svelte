@@ -5,6 +5,7 @@
 	import BlogCard from '$lib/components/BlogCard.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import SocialLinks from '$lib/components/SocialLinks.svelte';
 	import { site } from '$lib/config';
 	import type { PageData } from './$types';
 
@@ -39,6 +40,9 @@
 				in the <a href="/blog">blog</a>. If you’re interested in a project, reach out via
 				<a href="/contact">contact</a>.
 			</p>
+			<div class="border-border/60 border-t pt-4">
+				<SocialLinks />
+			</div>
 		</div>
 		<ProfileAvatar />
 	</section>
@@ -102,7 +106,9 @@
 	{#if data.latestPosts.length > 0}
 		<section class="motion-fade-up motion-delay-3" aria-labelledby="latest-post-heading">
 			<div class="border-border mb-6 flex items-end justify-between gap-4 border-b pb-4">
-				<h2 id="latest-post-heading" class="text-text text-2xl font-semibold">Latest from the blog</h2>
+				<h2 id="latest-post-heading" class="text-text text-2xl font-semibold">
+					Latest from the blog
+				</h2>
 				<a href="/blog" class="text-accent text-sm font-medium hover:text-white">View all →</a>
 			</div>
 			<ul
