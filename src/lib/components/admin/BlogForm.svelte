@@ -13,7 +13,9 @@
 		formError = '',
 		mode,
 		slug,
-		postOptions = []
+		postOptions = [],
+		itemLabel = 'post',
+		showFeaturedOrder = false
 	}: {
 		values: BlogFormValues;
 		errors?: Record<string, string>;
@@ -21,6 +23,8 @@
 		mode: 'create' | 'edit';
 		slug?: string;
 		postOptions?: PostOption[];
+		itemLabel?: string;
+		showFeaturedOrder?: boolean;
 	} = $props();
 
 	let confirmDelete = $state(false);
@@ -166,6 +170,24 @@
 		</p>
 	</div>
 
+	{#if showFeaturedOrder}
+		<div>
+			<label class="admin-label" for="featured_order">Featured order</label>
+			<input
+				id="featured_order"
+				name="featured_order"
+				type="number"
+				class="admin-input font-mono"
+				value={values.featured_order}
+			/>
+			{#if errors.featured_order}<p class="admin-field-error">{errors.featured_order}</p>{/if}
+			<p class="text-text-muted mt-1 text-xs">
+				Leave blank to keep this post off the home page Featured Blogs section. Lower numbers appear
+				first.
+			</p>
+		</div>
+	{/if}
+
 	<label class="flex items-center gap-2 text-sm">
 		<input type="checkbox" name="published" checked={values.published} />
 		<span>Published</span>
@@ -173,7 +195,7 @@
 
 	<div class="flex flex-wrap gap-3">
 		<button type="submit" class="btn-primary">
-			{mode === 'create' ? 'Create post' : 'Save changes'}
+			{mode === 'create' ? `Create ${itemLabel}` : 'Save changes'}
 		</button>
 		<a href="/admin" class="btn">Cancel</a>
 	</div>
@@ -188,7 +210,7 @@
 				<span>I understand this permanently deletes <code class="font-mono">{slug}</code></span>
 			</label>
 			<button type="submit" class="btn border-red-500/50 text-red-300" disabled={!confirmDelete}>
-				Delete post
+				Delete {itemLabel}
 			</button>
 		</form>
 	</div>

@@ -9,6 +9,7 @@ import {
 import {
 	blogPostSchema,
 	collectBlogTags,
+	featuredBlogPosts,
 	formatBlogDate,
 	isBlogPostPubliclyVisible,
 	matchesBlogSearch,
@@ -209,6 +210,22 @@ describe('blog schema', () => {
 		expect(
 			resolveContinuedReading({ ...posts[0]!, continued_reading: 'missing' }, posts)?.slug
 		).toBe('middle');
+	});
+
+	it('accepts optional featured_order', () => {
+		expect(blogPostSchema.parse({ ...samplePost, featured_order: 2 }).featured_order).toBe(2);
+		expect(blogPostSchema.parse(samplePost).featured_order).toBeUndefined();
+	});
+
+	it('selects featured posts by featured_order, skipping unpublished and unfeatured', () => {
+		const posts = [
+			{ ...samplePost, slug: 'unfeatured', published_at: '2026-07-20' },
+			{ ...samplePost, slug: 'draft', published: false, featured_order: 0 },
+			{ ...samplePost, slug: 'second', featured_order: 2, published_at: '2026-07-19' },
+			{ ...samplePost, slug: 'first', featured_order: 1, published_at: '2026-07-01' }
+		];
+		expect(featuredBlogPosts(posts, 3).map((post) => post.slug)).toEqual(['first', 'second']);
+		expect(featuredBlogPosts(posts, 1).map((post) => post.slug)).toEqual(['first']);
 	});
 });
 

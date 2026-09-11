@@ -11,11 +11,13 @@
 	const isAdmin = $derived(
 		page.url.pathname === '/admin' || page.url.pathname.startsWith('/admin/')
 	);
+	const isPlanetPage = $derived(page.url.pathname === '/planet');
 	const showPlanet = $derived.by(() => {
 		const path = page.url.pathname;
 		// Detail pages only — list pages (/projects, /blog) keep the backdrop.
 		if (path.startsWith('/project/')) return false;
 		if (path.startsWith('/blog/')) return false;
+		if (path.startsWith('/updates/')) return false;
 		return true;
 	});
 
@@ -45,6 +47,13 @@
 </script>
 
 {#if isAdmin}
+	{@render children()}
+{:else if isPlanetPage}
+	{#if PlanetBackdrop && showPlanet}
+		{#key page.url.pathname}
+			<PlanetBackdrop variant="page" />
+		{/key}
+	{/if}
 	{@render children()}
 {:else}
 	{#if PlanetBackdrop && showPlanet}

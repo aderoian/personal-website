@@ -1,38 +1,38 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { blogToFormValues } from '$lib/admin-forms';
-import { checkboxChecked, optionalInt, parseTagsInput, safeParseFields } from '$lib/server/admin-form';
+import { checkboxChecked, parseTagsInput, safeParseFields } from '$lib/server/admin-form';
 import {
 	ContentConflictError,
 	ContentNotFoundError,
-	deleteBlogPost,
-	findBlogPostBySlug,
-	loadBlogPosts,
-	setBlogPostPublished,
-	updateBlogPost,
+	deleteUpdatePost,
+	findUpdatePostBySlug,
+	loadUpdatePosts,
+	setUpdatePostPublished,
+	updateUpdatePost,
 	utcNowIso,
 	utcTodayDate
-} from '$lib/server/content/blog';
-import { blogPostSchema } from '$lib/schemas/blog-post';
+} from '$lib/server/content/updates';
+import { updatePostSchema } from '$lib/schemas/update-post';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const post = findBlogPostBySlug(params.slug);
+	const post = findUpdatePostBySlug(params.slug);
 	if (!post) {
-		error(404, 'Post not found');
+		error(404, 'Update not found');
 	}
 
 	return {
 		post,
 		values: blogToFormValues(post),
-		postOptions: loadBlogPosts().map((entry) => ({ slug: entry.slug, title: entry.title }))
+		postOptions: loadUpdatePosts().map((entry) => ({ slug: entry.slug, title: entry.title }))
 	};
 };
 
 export const actions: Actions = {
 	save: async ({ request, params }) => {
-		const existing = findBlogPostBySlug(params.slug);
+		const existing = findUpdatePostBySlug(params.slug);
 		if (!existing) {
-			error(404, 'Post not found');
+			error(404, 'Update not found');
 		}
 
 		const formData = await request.formData();
@@ -45,13 +45,13 @@ export const actions: Actions = {
 			published_at: String(formData.get('published_at') ?? ''),
 			tags: String(formData.get('tags') ?? ''),
 			continued_reading: String(formData.get('continued_reading') ?? ''),
-			featured_order: String(formData.get('featured_order') ?? '')
+			featured_order: ''
 		};
 
 		const publishedAt = values.published_at.trim() || existing.published_at || utcTodayDate();
 		const now = utcNowIso();
 
-		const parsed = safeParseFields(blogPostSchema, {
+		const parsed = safeParseFields(updatePostSchema, {
 			slug: values.slug,
 			title: values.title,
 			summary: values.summary,
@@ -60,8 +60,7 @@ export const actions: Actions = {
 			published_at: publishedAt,
 			updated_at: now,
 			tags: parseTagsInput(formData.get('tags')),
-			continued_reading: values.continued_reading,
-			featured_order: optionalInt(formData.get('featured_order'))
+			continued_reading: values.continued_reading
 		});
 
 		if (!parsed.success) {
@@ -73,8 +72,8 @@ export const actions: Actions = {
 		}
 
 		try {
-			const post = await updateBlogPost(params.slug, parsed.data);
-			redirect(303, `/admin/blog/${post.slug}`);
+			const post = await updateUpdatePost(params.slug, parsed.data);
+			redirect(303, `/admin/updates/${post.slug}`);
 		} catch (err) {
 			if (err instanceof ContentConflictError) {
 				return fail(409, {
@@ -97,7 +96,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			await deleteBlogPost(params.slug);
+			await deleteUpdatePost(params.slug);
 		} catch (err) {
 			if (err instanceof ContentNotFoundError) {
 				error(404, err.message);
@@ -109,12 +108,12 @@ export const actions: Actions = {
 	},
 
 	togglePublish: async ({ params }) => {
-		const post = findBlogPostBySlug(params.slug);
+		const post = findUpdatePostBySlug(params.slug);
 		if (!post) {
-			error(404, 'Post not found');
+			error(404, 'Update not found');
 		}
 
-		await setBlogPostPublished(params.slug, !post.published);
+		await setUpdatePostPublished(params.slug, !post.published);
 		redirect(303, '/admin');
 	}
 };

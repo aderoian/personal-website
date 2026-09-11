@@ -2,6 +2,7 @@ export const site = {
 	name: 'Armen Deroian',
 	tagline: 'Developer',
 	topProjectsCount: 3,
+	topBlogsCount: 3,
 	profileImage: '/assets/profile.png',
 	contact: {
 		email: 'armendero330@gmail.com',
@@ -18,7 +19,14 @@ export const navItems = [
 	{ href: '/projects', label: 'Projects', id: 'projects' },
 	{ href: '/gildenkrieg', label: 'Gildenkrieg', id: 'gildenkrieg' },
 	{ href: '/blog', label: 'Blog', id: 'blog' },
+	{ href: '/updates', label: 'Updates', id: 'updates' },
 	{ href: '/contact', label: 'Contact', id: 'contact' }
+] as const;
+
+/** Header uses `navItems` only. Footer includes this extra Planet link. */
+export const footerNavItems = [
+	...navItems,
+	{ href: '/planet', label: 'Planet', id: 'planet' }
 ] as const;
 
 export const socialLinks = [
@@ -30,4 +38,5 @@ export const socialLinks = [
 ] as const;
 
 export type NavId = (typeof navItems)[number]['id'];
+export type FooterNavId = (typeof footerNavItems)[number]['id'];
 export type SocialLinkId = (typeof socialLinks)[number]['id'];

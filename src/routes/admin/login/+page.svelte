@@ -7,7 +7,7 @@
 <div class="mx-auto max-w-md">
 	<h2 class="text-text mb-2 text-xl font-semibold">Sign in</h2>
 	<p class="text-text-muted mb-6 text-sm">
-		Enter the admin password to manage projects and blog posts.
+		Enter the admin password to manage projects, blog posts, and updates.
 	</p>
 
 	{#if !data.configured}

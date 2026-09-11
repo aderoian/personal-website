@@ -21,7 +21,7 @@ services:
       - CONTACT_SMTP_ENCRYPTION=${CONTACT_SMTP_ENCRYPTION:-tls}
     volumes:
       # Writable persistent mount for admin content edits
-      # (projects.json / blog.json / blog-collections.json).
+      # (projects.json / blog.json / blog-collections.json / updates.json).
       # Missing files are seeded from the image on container start.
       - ./data:/app/data
     restart: unless-stopped

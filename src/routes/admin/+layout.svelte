@@ -10,7 +10,8 @@
 		{ href: '/admin', label: 'Dashboard' },
 		{ href: '/admin/projects/new', label: 'New project' },
 		{ href: '/admin/blog/new', label: 'New post' },
-		{ href: '/admin/blog/collections/new', label: 'New collection' }
+		{ href: '/admin/blog/collections/new', label: 'New collection' },
+		{ href: '/admin/updates/new', label: 'New update' }
 	] as const;
 
 	function isActive(href: string): boolean {

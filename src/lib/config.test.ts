@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { site, socialLinks } from '$lib/config';
+import { footerNavItems, navItems, site, socialLinks } from '$lib/config';
+
+describe('navItems', () => {
+	it('does not include the planet page in the header', () => {
+		expect(navItems.map((item) => item.id)).not.toContain('planet');
+		expect(navItems.map((item) => item.href)).not.toContain('/planet');
+	});
+});
+
+describe('footerNavItems', () => {
+	it('includes header destinations plus Planet', () => {
+		expect(footerNavItems.map((item) => item.id)).toEqual([...navItems.map((item) => item.id), 'planet']);
+		expect(footerNavItems.at(-1)).toEqual({ href: '/planet', label: 'Planet', id: 'planet' });
+	});
+});
 
 describe('socialLinks', () => {
 	it('lists profiles in the home-page order', () => {

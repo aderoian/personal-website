@@ -1,6 +1,7 @@
 import {
 	blogFileSchema,
 	blogPostSchema,
+	featuredBlogPosts,
 	isBlogPostPubliclyVisible,
 	publishedBlogPosts,
 	sortBlogPosts,
@@ -45,6 +46,10 @@ export function getLatestPublishedBlogPosts(limit = 2): BlogPost[] {
 
 export function getLatestPublishedBlogPost(): BlogPost | undefined {
 	return getLatestPublishedBlogPosts(1)[0];
+}
+
+export function getFeaturedBlogPosts(count: number): BlogPost[] {
+	return featuredBlogPosts(loadBlogPosts(), count);
 }
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {

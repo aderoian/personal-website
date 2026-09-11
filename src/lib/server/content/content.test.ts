@@ -5,11 +5,19 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	createBlogPost,
 	getBlogPostBySlug,
+	getFeaturedBlogPosts,
 	getLatestPublishedBlogPost,
 	getLatestPublishedBlogPosts,
 	getPublishedBlogPosts,
 	loadBlogPosts
 } from '$lib/server/content/blog';
+import { getLatestPublishedArticles } from '$lib/server/content/latest';
+import {
+	createUpdatePost,
+	getPublishedUpdatePosts,
+	getUpdatePostBySlug,
+	loadUpdatePosts
+} from '$lib/server/content/updates';
 import {
 	createBlogCollection,
 	deleteBlogCollection,
@@ -72,6 +80,23 @@ describe('content loaders (repository data)', () => {
 		expect(posts.every((post) => post.published)).toBe(true);
 	});
 
+	it('returns featured blog posts in featured_order', () => {
+		const featured = getFeaturedBlogPosts(3);
+		expect(featured).toHaveLength(3);
+		expect(featured[0]?.featured_order).toBeLessThanOrEqual(
+			featured[1]?.featured_order ?? Infinity
+		);
+		expect(featured[1]?.featured_order).toBeLessThanOrEqual(
+			featured[2]?.featured_order ?? Infinity
+		);
+	});
+
+	it('loads published updates from data/updates.json', () => {
+		const posts = getPublishedUpdatePosts();
+		expect(posts.length).toBeGreaterThan(0);
+		expect(posts.every((post) => post.published)).toBe(true);
+	});
+
 	it('loads blog collections from data/blog-collections.json', () => {
 		const collections = loadBlogCollections();
 		expect(Array.isArray(collections)).toBe(true);
@@ -91,6 +116,7 @@ describe('content repositories (temp DATA_DIR)', () => {
 		writeFileSync(join(tempDir, 'projects.json'), '[]\n', 'utf8');
 		writeFileSync(join(tempDir, 'blog.json'), '[]\n', 'utf8');
 		writeFileSync(join(tempDir, 'blog-collections.json'), '[]\n', 'utf8');
+		writeFileSync(join(tempDir, 'updates.json'), '[]\n', 'utf8');
 	});
 
 	afterEach(() => {
@@ -226,6 +252,130 @@ describe('content repositories (temp DATA_DIR)', () => {
 		};
 		await createBlogPost(post);
 		await expect(createBlogPost(post)).rejects.toThrow(/already exists/);
+	});
+
+	it('treats a missing updates.json as an empty list', () => {
+		rmSync(join(tempDir, 'updates.json'), { force: true });
+		expect(existsSync(join(tempDir, 'updates.json'))).toBe(false);
+		expect(loadUpdatePosts()).toEqual([]);
+		expect(getPublishedUpdatePosts()).toEqual([]);
+	});
+
+	it('creates updates and filters unpublished from public loaders', async () => {
+		await createUpdatePost({
+			slug: 'shipped',
+			title: 'Shipped',
+			summary: 'Summary',
+			body: '# Shipped',
+			published: true,
+			published_at: '2026-07-18',
+			updated_at: '2026-07-18T12:00:00Z'
+		});
+		await createUpdatePost({
+			slug: 'draft',
+			title: 'Draft',
+			summary: 'Summary',
+			body: '# Draft',
+			published: false,
+			published_at: '2026-07-18',
+			updated_at: '2026-07-18T12:00:00Z'
+		});
+
+		expect(loadUpdatePosts()).toHaveLength(2);
+		expect(getPublishedUpdatePosts()).toHaveLength(1);
+		expect(getUpdatePostBySlug('draft')).toBeUndefined();
+		expect(getUpdatePostBySlug('shipped')?.title).toBe('Shipped');
+	});
+
+	it('rejects duplicate update slugs', async () => {
+		const post = {
+			slug: 'hello',
+			title: 'Hello',
+			summary: 'Summary',
+			body: '# Hello',
+			published: true,
+			published_at: '2026-07-18',
+			updated_at: '2026-07-18T12:00:00Z'
+		};
+		await createUpdatePost(post);
+		await expect(createUpdatePost(post)).rejects.toThrow(/already exists/);
+	});
+
+	it('mixes published blogs and updates by date for Latest', async () => {
+		await createBlogPost({
+			slug: 'older-blog',
+			title: 'Older blog',
+			summary: 'Summary',
+			body: '# Blog',
+			published: true,
+			published_at: '2026-07-01',
+			updated_at: '2026-07-01T12:00:00Z'
+		});
+		await createBlogPost({
+			slug: 'newer-blog',
+			title: 'Newer blog',
+			summary: 'Summary',
+			body: '# Blog',
+			published: true,
+			published_at: '2026-07-20',
+			updated_at: '2026-07-20T12:00:00Z'
+		});
+		await createUpdatePost({
+			slug: 'mid-update',
+			title: 'Mid update',
+			summary: 'Summary',
+			body: '# Update',
+			published: true,
+			published_at: '2026-07-10',
+			updated_at: '2026-07-10T12:00:00Z'
+		});
+		await createUpdatePost({
+			slug: 'draft-update',
+			title: 'Draft update',
+			summary: 'Summary',
+			body: '# Draft',
+			published: false,
+			published_at: '2026-07-21',
+			updated_at: '2026-07-21T12:00:00Z'
+		});
+
+		expect(
+			getLatestPublishedArticles(3).map((item) => `${item.kind}:${item.post.slug}`)
+		).toEqual(['blog:newer-blog', 'update:mid-update', 'blog:older-blog']);
+	});
+
+	it('selects featured blog posts from the repository helpers', async () => {
+		await createBlogPost({
+			slug: 'plain',
+			title: 'Plain',
+			summary: 'Summary',
+			body: '# Plain',
+			published: true,
+			published_at: '2026-07-18',
+			updated_at: '2026-07-18T12:00:00Z'
+		});
+		await createBlogPost({
+			slug: 'feature-b',
+			title: 'Feature B',
+			summary: 'Summary',
+			body: '# B',
+			published: true,
+			published_at: '2026-07-18',
+			updated_at: '2026-07-18T12:00:00Z',
+			featured_order: 2
+		});
+		await createBlogPost({
+			slug: 'feature-a',
+			title: 'Feature A',
+			summary: 'Summary',
+			body: '# A',
+			published: true,
+			published_at: '2026-07-01',
+			updated_at: '2026-07-01T12:00:00Z',
+			featured_order: 1
+		});
+
+		expect(getFeaturedBlogPosts(5).map((post) => post.slug)).toEqual(['feature-a', 'feature-b']);
 	});
 
 	it('creates, updates, publishes, and deletes blog collections', async () => {

@@ -12,6 +12,12 @@
 	} from 'three';
 	import { planetConfig, randomSeaLevel } from '$lib/planet/planetConfig';
 
+	let {
+		variant = 'backdrop'
+	}: {
+		variant?: 'backdrop' | 'page';
+	} = $props();
+
 	let container: HTMLDivElement | undefined = $state();
 
 	const cfg = planetConfig;
@@ -218,7 +224,10 @@
 <div
 	bind:this={container}
 	class="planet-backdrop"
-	aria-hidden="true"
+	class:planet-backdrop--page={variant === 'page'}
+	aria-hidden={variant !== 'page'}
+	role={variant === 'page' ? 'img' : undefined}
+	aria-label={variant === 'page' ? 'Procedural planet' : undefined}
 	style="--planet-opacity-desktop: {sceneCfg.backdropOpacity
 		.desktop}; --planet-opacity-mobile: {sceneCfg.backdropOpacity.mobile};"
 ></div>
@@ -245,8 +254,12 @@
 	}
 
 	@media (max-width: 767px) {
-		.planet-backdrop {
+		.planet-backdrop:not(.planet-backdrop--page) {
 			opacity: var(--planet-opacity-mobile, 0.5);
 		}
+	}
+
+	.planet-backdrop--page {
+		opacity: 1;
 	}
 </style>

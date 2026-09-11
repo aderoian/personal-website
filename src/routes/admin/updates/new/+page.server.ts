@@ -1,14 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { emptyBlogFormValues } from '$lib/admin-forms';
-import { checkboxChecked, optionalInt, parseTagsInput, safeParseFields } from '$lib/server/admin-form';
+import { checkboxChecked, parseTagsInput, safeParseFields } from '$lib/server/admin-form';
 import {
 	ContentConflictError,
-	createBlogPost,
-	loadBlogPosts,
+	createUpdatePost,
+	loadUpdatePosts,
 	utcNowIso,
 	utcTodayDate
-} from '$lib/server/content/blog';
-import { blogPostSchema } from '$lib/schemas/blog-post';
+} from '$lib/server/content/updates';
+import { updatePostSchema } from '$lib/schemas/update-post';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -17,7 +17,7 @@ export const load: PageServerLoad = async () => {
 			...emptyBlogFormValues(),
 			published_at: utcTodayDate()
 		},
-		postOptions: loadBlogPosts().map((post) => ({ slug: post.slug, title: post.title }))
+		postOptions: loadUpdatePosts().map((post) => ({ slug: post.slug, title: post.title }))
 	};
 };
 
@@ -33,13 +33,13 @@ export const actions: Actions = {
 			published_at: String(formData.get('published_at') ?? ''),
 			tags: String(formData.get('tags') ?? ''),
 			continued_reading: String(formData.get('continued_reading') ?? ''),
-			featured_order: String(formData.get('featured_order') ?? '')
+			featured_order: ''
 		};
 
 		const publishedAt = values.published_at.trim() || utcTodayDate();
 		const now = utcNowIso();
 
-		const parsed = safeParseFields(blogPostSchema, {
+		const parsed = safeParseFields(updatePostSchema, {
 			slug: values.slug,
 			title: values.title,
 			summary: values.summary,
@@ -48,8 +48,7 @@ export const actions: Actions = {
 			published_at: publishedAt,
 			updated_at: now,
 			tags: parseTagsInput(formData.get('tags')),
-			continued_reading: values.continued_reading,
-			featured_order: optionalInt(formData.get('featured_order'))
+			continued_reading: values.continued_reading
 		});
 
 		if (!parsed.success) {
@@ -61,8 +60,8 @@ export const actions: Actions = {
 		}
 
 		try {
-			const post = await createBlogPost(parsed.data);
-			redirect(303, `/admin/blog/${post.slug}`);
+			const post = await createUpdatePost(parsed.data);
+			redirect(303, `/admin/updates/${post.slug}`);
 		} catch (error) {
 			if (error instanceof ContentConflictError) {
 				return fail(409, {

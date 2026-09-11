@@ -37,7 +37,8 @@
 			<p class="text-text-muted max-w-2xl">
 				This site is a snapshot of what I’ve been building or have worked on. Explore featured work
 				below or browse the <a href="/projects">full project list</a>. You can also view write-ups
-				in the <a href="/blog">blog</a>. If you’re interested in a project, reach out via
+				in the <a href="/blog">blog</a> and shorter notes in <a href="/updates">updates</a>. If
+				you’re interested in a project, reach out via
 				<a href="/contact">contact</a>.
 			</p>
 			<div class="border-border/60 border-t pt-4">
@@ -103,22 +104,23 @@
 		</div>
 	</section>
 
-	{#if data.latestPosts.length > 0}
+	{#if data.latestArticles.length > 0}
 		<section class="motion-fade-up motion-delay-3" aria-labelledby="latest-post-heading">
 			<div class="border-border mb-6 flex items-end justify-between gap-4 border-b pb-4">
-				<h2 id="latest-post-heading" class="text-text text-2xl font-semibold">
-					Latest from the blog
-				</h2>
-				<a href="/blog" class="text-accent text-sm font-medium hover:text-white">View all →</a>
+				<h2 id="latest-post-heading" class="text-text text-2xl font-semibold">Latest</h2>
+				<div class="flex flex-wrap items-center gap-3">
+					<a href="/blog" class="text-accent text-sm font-medium hover:text-white">Blog →</a>
+					<a href="/updates" class="text-accent text-sm font-medium hover:text-white">Updates →</a>
+				</div>
 			</div>
 			<ul
-				class="mx-auto grid gap-6 {data.latestPosts.length > 1
+				class="mx-auto grid gap-6 {data.latestArticles.length > 1
 					? 'max-w-6xl sm:grid-cols-2'
 					: 'max-w-xl'}"
 			>
-				{#each data.latestPosts as post (post.slug)}
+				{#each data.latestArticles as item (`${item.kind}:${item.post.slug}`)}
 					<li>
-						<BlogCard {post} utmSource="home" />
+						<BlogCard post={item.post} kind={item.kind} showKind utmSource="home" />
 					</li>
 				{/each}
 			</ul>
@@ -138,6 +140,25 @@
 				{#each data.featured as project (project.slug)}
 					<li>
 						<ProjectCard {project} />
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</section>
+
+	<section class="motion-fade-up motion-delay-3" aria-labelledby="featured-blogs-heading">
+		<div class="border-border mb-6 flex items-end justify-between gap-4 border-b pb-4">
+			<h2 id="featured-blogs-heading" class="text-text text-2xl font-semibold">Featured Blogs</h2>
+			<a href="/blog" class="text-accent text-sm font-medium hover:text-white">View all →</a>
+		</div>
+
+		{#if data.featuredPosts.length === 0}
+			<EmptyState message="No featured posts yet—check back soon." />
+		{:else}
+			<ul class="motion-stagger grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+				{#each data.featuredPosts as post (post.slug)}
+					<li>
+						<BlogCard {post} utmSource="home" />
 					</li>
 				{/each}
 			</ul>

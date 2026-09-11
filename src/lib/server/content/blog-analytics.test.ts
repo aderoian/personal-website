@@ -14,6 +14,11 @@ import {
 	getPostAnalytics,
 	recordBlogView
 } from '$lib/server/content/blog-analytics';
+import {
+	getOverallUpdateAnalytics,
+	getUpdateAnalytics,
+	recordUpdateView
+} from '$lib/server/content/update-analytics';
 
 describe('normalizeUtmSource', () => {
 	it('defaults missing, empty, and whitespace to worldwide-web', () => {
@@ -105,5 +110,39 @@ describe('blog-analytics store (temp DATA_DIR)', () => {
 
 		const persisted = JSON.parse(readFileSync(join(tempDir, 'blog-analytics.json'), 'utf8'));
 		expect(persisted.posts.alpha.total).toBe(2);
+	});
+});
+
+describe('update-analytics store (temp DATA_DIR)', () => {
+	const previousDataDir = process.env.DATA_DIR;
+	let tempDir: string;
+
+	beforeEach(() => {
+		tempDir = mkdtempSync(join(tmpdir(), 'pw-update-analytics-'));
+		process.env.DATA_DIR = tempDir;
+		writeFileSync(join(tempDir, 'update-analytics.json'), '{"posts":{}}\n', 'utf8');
+	});
+
+	afterEach(() => {
+		if (previousDataDir === undefined) delete process.env.DATA_DIR;
+		else process.env.DATA_DIR = previousDataDir;
+		rmSync(tempDir, { recursive: true, force: true });
+	});
+
+	it('records update views separately from blog analytics', async () => {
+		await recordUpdateView('shipped', 'home');
+		await recordUpdateView('shipped', null);
+
+		const overall = getOverallUpdateAnalytics();
+		expect(overall.total).toBe(2);
+		expect(getUpdateAnalytics('shipped')).toMatchObject({
+			slug: 'shipped',
+			total: 2,
+			sources: { home: 1, [DEFAULT_UTM_SOURCE]: 1 }
+		});
+		expect(getOverallAnalytics().total).toBe(0);
+
+		const persisted = JSON.parse(readFileSync(join(tempDir, 'update-analytics.json'), 'utf8'));
+		expect(persisted.posts.shipped.total).toBe(2);
 	});
 });

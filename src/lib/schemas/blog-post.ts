@@ -18,7 +18,9 @@ export const blogPostSchema = z.object({
 		.regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/, 'updated_at must be ISO UTC'),
 	tags: z.array(z.string().trim().min(1)).optional(),
 	/** Optional slug of the post to suggest after this article. */
-	continued_reading: optionalSlugSchema
+	continued_reading: optionalSlugSchema,
+	/** Lower numbers appear first among featured posts. Omitted posts are not featured. */
+	featured_order: z.number().int().optional()
 });
 
 export const blogFileSchema = z.array(blogPostSchema).superRefine((posts, ctx) => {
@@ -146,4 +148,18 @@ export function resolveContinuedReading(
 	}
 
 	return others[0];
+}
+
+/**
+ * Published posts that have a featured_order, sorted like projects
+ * (featured_order then slug), then sliced to `count`.
+ */
+export function featuredBlogPosts(posts: BlogPost[], count: number): BlogPost[] {
+	const featured = publishedBlogPosts(posts)
+		.filter((post) => post.featured_order !== undefined)
+		.sort(
+			(a, b) =>
+				(a.featured_order ?? 0) - (b.featured_order ?? 0) || a.slug.localeCompare(b.slug)
+		);
+	return featured.slice(0, Math.max(0, count));
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { navItems, site } from '$lib/config';
+	import { footerNavItems, site } from '$lib/config';
 
 	const year = new Date().getFullYear();
 </script>
@@ -14,7 +14,7 @@
 		<nav aria-label="Footer">
 			<p class="text-accent mb-3 font-mono text-xs tracking-wider uppercase">Navigate</p>
 			<ul class="space-y-2 text-sm">
-				{#each navItems as item (item.id)}
+				{#each footerNavItems as item (item.id)}
 					<li>
 						<a href={item.href} class="text-text-muted hover:text-accent no-underline">
 							{item.label}

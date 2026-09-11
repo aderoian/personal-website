@@ -27,6 +27,7 @@ export type BlogFormValues = {
 	published_at: string;
 	tags: string;
 	continued_reading: string;
+	featured_order: string;
 };
 
 export type BlogCollectionFormValues = {
@@ -62,7 +63,8 @@ export const emptyBlogFormValues = (): BlogFormValues => ({
 	published: false,
 	published_at: '',
 	tags: '',
-	continued_reading: ''
+	continued_reading: '',
+	featured_order: ''
 });
 
 export const emptyBlogCollectionFormValues = (): BlogCollectionFormValues => ({
@@ -101,7 +103,8 @@ export function blogToFormValues(post: BlogPost): BlogFormValues {
 		published: post.published,
 		published_at: post.published_at,
 		tags: post.tags?.join(', ') ?? '',
-		continued_reading: post.continued_reading ?? ''
+		continued_reading: post.continued_reading ?? '',
+		featured_order: post.featured_order != null ? String(post.featured_order) : ''
 	};
 }
 

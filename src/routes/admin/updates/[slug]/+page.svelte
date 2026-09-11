@@ -7,11 +7,16 @@
 
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
 	<div>
-		<h2 class="text-text text-xl font-semibold">Edit blog post</h2>
+		<h2 class="text-text text-xl font-semibold">Edit update</h2>
 		<p class="text-text-muted font-mono text-sm">{data.post.slug}</p>
 	</div>
 	{#if data.post.published}
-		<a href="/blog/{data.post.slug}" class="btn text-sm" target="_blank" rel="noopener noreferrer">
+		<a
+			href="/updates/{data.post.slug}"
+			class="btn text-sm"
+			target="_blank"
+			rel="noopener noreferrer"
+		>
 			View public page
 		</a>
 	{/if}
@@ -19,10 +24,10 @@
 
 <BlogForm
 	mode="edit"
+	itemLabel="update"
 	slug={data.post.slug}
 	values={form?.values ?? data.values}
 	errors={form?.errors ?? {}}
 	formError={form?.formError ?? ''}
 	postOptions={data.postOptions}
-	showFeaturedOrder
 />
